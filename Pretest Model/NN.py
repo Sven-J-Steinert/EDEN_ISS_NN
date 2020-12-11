@@ -17,7 +17,7 @@ print('Tensorflow Version ' + tf.__version__)
 ###############################################################################
 # LOADING DATA
 ###############################################################################
-url = 'experiment_data.csv'
+url = 'data.csv'
 column_names = ['datetime','Heater', 'Window', 'Fan', 'Temp', 'Velocity','CO2']
 
 raw_dataset = pd.read_csv(url, names=column_names, parse_dates=['datetime'], index_col="datetime",
