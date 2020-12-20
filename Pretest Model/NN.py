@@ -1,11 +1,11 @@
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import seaborn as sns
+import matplotlib.pyplot as plt         # plots
+import numpy as np                      # math operations
+import pandas as pd                     # dataset handling
+import seaborn as sns                   # detailed plotting
 # Make numpy printouts easier to read.
 np.set_printoptions(precision=3, suppress=True)
 
-import tensorflow as tf
+import tensorflow as tf                 # machiene learning
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.layers.experimental import preprocessing
