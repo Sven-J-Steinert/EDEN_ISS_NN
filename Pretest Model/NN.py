@@ -1,14 +1,18 @@
-import matplotlib.pyplot as plt         # plots
-import numpy as np                      # math operations
-import pandas as pd                     # dataset handling
-import seaborn as sns                   # detailed plotting
-# Make numpy printouts easier to read.
-np.set_printoptions(precision=3, suppress=True)
+import os
+import datetime
 
-import tensorflow as tf                 # machiene learning
-from tensorflow import keras
-from tensorflow.keras import layers
-from tensorflow.keras.layers.experimental import preprocessing
+import IPython
+import IPython.display
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import tensorflow as tf
+
+mpl.rcParams['figure.figsize'] = (8, 6)
+mpl.rcParams['axes.grid'] = False
+
 
 from sklearn.preprocessing import RobustScaler
 
@@ -26,25 +30,19 @@ raw_dataset = pd.read_csv(url, names=column_names, parse_dates=['datetime'], ind
 print(raw_dataset.shape)
 
 
-dataset = raw_dataset.copy()
-print(dataset.tail())
+df = raw_dataset.copy()
+print(df.tail())
 print('')
-print('missing variables (dropped):')
-print(dataset.isna().sum())
-dataset = dataset.dropna()
-
-# when categorical needes to be splitted
-# dataset['Origin'] = dataset['Origin'].map({1: 'USA', 2: 'Europe', 3: 'Japan'})
-# dataset = pd.get_dummies(dataset, prefix='', prefix_sep='')
-# dataset.tail()
+print('missing variables:', end=' ')
+print(df.isna().sum().sum())
 
 ###############################################################################
 # VISUALIZE DATA
 ###############################################################################
 
 plot_cols = ['Heater', 'Window', 'Fan', 'Temp', 'Velocity','CO2']
-plot_features = dataset[plot_cols]
-plot_features.index = dataset.index
+plot_features = df[plot_cols]
+plot_features.index = df.index
 _ = plot_features.plot(subplots=True)
 plt.show()
 
@@ -52,131 +50,290 @@ plt.show()
 ###############################################################################
 # DATASET SEPERATION
 ###############################################################################
-train_size = int(len(dataset) * 0.9)
-test_size = len(dataset) - train_size
 
-train_dataset = dataset.iloc[0:train_size]
-test_dataset = dataset.iloc[train_size:len(dataset)]
+column_indices = {name: i for i, name in enumerate(df.columns)}
 
-print('')
-print('Training Dataset')
-print(len(train_dataset))
-#print(train_dataset.tail())
-print('')
-print('Test Dataset')
-print(len(test_dataset))
-#print(test_dataset.tail())
+n = len(df)
+train_df = df[0:int(n*0.7)]
+val_df = df[int(n*0.7):int(n*0.9)]
+test_df = df[int(n*0.9):]
 
-#sns.pairplot(train_dataset[['Temp', 'Velocity', 'CO2']], diag_kind='kde')
-#plt.show()
+num_features = df.shape[1]
 
 ###############################################################################
 # FEATURE SCALING
 ###############################################################################
-#f_columns = ['Temp', 'Velocity','CO2']
-#f_transformer = RobustScaler()
-#f_transformer = f_transformer.fit(train_dataset[f_columns].to_numpy())
-
-#train_dataset.loc[:, f_columns] = f_transformer.transform(train_dataset[f_columns].to_numpy())
-
-#test_dataset.loc[:, f_columns] = f_transformer.transform(test_dataset[f_columns].to_numpy())
-
 print('')
 print('scaling features...')
+
+train_mean = train_df.mean()
+train_std = train_df.std()
+
+train_df = (train_df - train_mean) / train_std
+val_df = (val_df - train_mean) / train_std
+test_df = (test_df - train_mean) / train_std
+
 print('Training Dataset')
-print(train_dataset.tail())
+print(train_df.tail())
 print('')
-print('Test Dataset')
-print(test_dataset.tail())
 
 ###############################################################################
-# CREATE FITTING DATASET
+# WINDOW CLASS
+###############################################################################
+class WindowGenerator():
+  def __init__(self, input_width, label_width, shift,
+               train_df=train_df, val_df=val_df, test_df=test_df,
+               label_columns=None):
+    # Store the raw data.
+    self.train_df = train_df
+    self.val_df = val_df
+    self.test_df = test_df
+
+    # Work out the label column indices.
+    self.label_columns = label_columns
+    if label_columns is not None:
+      self.label_columns_indices = {name: i for i, name in
+                                    enumerate(label_columns)}
+    self.column_indices = {name: i for i, name in
+                           enumerate(train_df.columns)}
+
+    # Work out the window parameters.
+    self.input_width = input_width
+    self.label_width = label_width
+    self.shift = shift
+
+    self.total_window_size = input_width + shift
+
+    self.input_slice = slice(0, input_width)
+    self.input_indices = np.arange(self.total_window_size)[self.input_slice]
+
+    self.label_start = self.total_window_size - self.label_width
+    self.labels_slice = slice(self.label_start, None)
+    self.label_indices = np.arange(self.total_window_size)[self.labels_slice]
+
+  def __repr__(self):
+    return '\n'.join([
+        f'Total window size: {self.total_window_size}',
+        f'Input indices: {self.input_indices}',
+        f'Label indices: {self.label_indices}',
+        f'Label column name(s): {self.label_columns}'])
+
+
+###############################################################################
+# WINDOW GENERATOR USAGE
 ###############################################################################
 
-def create_dataset(X, y, time_steps=1):
-    Xs, ys = [], []
-    for i in range(len(X) - time_steps):
-        v = X.iloc[i:(i + time_steps)].values
-        Xs.append(v)
-        ys.append(y.iloc[i + time_steps])
-    return np.array(Xs), np.array(ys)
+
+w1 = WindowGenerator(input_width=24, label_width=1, shift=24,
+                     label_columns=['Temp'])
+print(w1)
+
+w2 = WindowGenerator(input_width=6, label_width=1, shift=1,
+                     label_columns=['Temp'])
+print(w2)
 
 
-time_steps = 1
-# reshape to [samples, time_steps, n_features]
+###############################################################################
+# SPLIT WINDOW
+###############################################################################
 
-X_train, y_train = create_dataset(train_dataset, train_dataset.Temp, time_steps)
-X_test, y_test = create_dataset(test_dataset, test_dataset.Temp, time_steps)
+def split_window(self, features):
+  inputs = features[:, self.input_slice, :]
+  labels = features[:, self.labels_slice, :]
+  if self.label_columns is not None:
+    labels = tf.stack(
+        [labels[:, :, self.column_indices[name]] for name in self.label_columns],
+        axis=-1)
 
-print(X_train.shape, y_train.shape)
-print('input shape: ' + str(X_train.shape[1]) + 'x' + str(X_train.shape[2]))
+  # Slicing doesn't preserve static shape information, so set the shapes
+  # manually. This way the `tf.data.Datasets` are easier to inspect.
+  inputs.set_shape([None, self.input_width, None])
+  labels.set_shape([None, self.label_width, None])
+
+  return inputs, labels
+
+WindowGenerator.split_window = split_window
+
+###############################################################################
+#  SPLIT WINDOW USAGE
+###############################################################################
+
+# Stack three slices, the length of the total window:
+example_window = tf.stack([np.array(train_df[:w2.total_window_size]),
+                           np.array(train_df[100:100+w2.total_window_size]),
+                           np.array(train_df[200:200+w2.total_window_size])])
+
+
+example_inputs, example_labels = w2.split_window(example_window)
+
+print('All shapes are: (batch, time, features)')
+print(f'Window shape: {example_window.shape}')
+print(f'Inputs shape: {example_inputs.shape}')
+print(f'labels shape: {example_labels.shape}')
+
+
+
+w2.example = example_inputs, example_labels
+
+
+
+
+def plot(self, model=None, plot_col='Temp', max_subplots=3):
+  inputs, labels = self.example
+  plt.figure(figsize=(12, 8))
+  plot_col_index = self.column_indices[plot_col]
+  max_n = min(max_subplots, len(inputs))
+  for n in range(max_n):
+    plt.subplot(3, 1, n+1)
+    plt.ylabel(f'{plot_col} [normed]')
+    plt.plot(self.input_indices, inputs[n, :, plot_col_index],
+             label='Inputs', marker='.', zorder=-10)
+
+    if self.label_columns:
+      label_col_index = self.label_columns_indices.get(plot_col, None)
+    else:
+      label_col_index = plot_col_index
+
+    if label_col_index is None:
+      continue
+
+    plt.scatter(self.label_indices, labels[n, :, label_col_index],
+                edgecolors='k', label='Labels', c='#2ca02c', s=64)
+    if model is not None:
+      predictions = model(inputs)
+      plt.scatter(self.label_indices, predictions[n, :, label_col_index],
+                  marker='X', edgecolors='k', label='Predictions',
+                  c='#ff7f0e', s=64)
+
+    if n == 0:
+      plt.legend()
+
+  plt.xlabel('Time [h]')
+
+WindowGenerator.plot = plot
+
+
+#w2.plot()
+#plt.show()
+
+#w2.plot(plot_col='Temp')
+#plt.show()
+
+
+###############################################################################
+# MAKE DATASET
+###############################################################################
+
+def make_dataset(self, data):
+  data = np.array(data, dtype=np.float32)
+  ds = tf.keras.preprocessing.timeseries_dataset_from_array(
+      data=data,
+      targets=None,
+      sequence_length=self.total_window_size,
+      sequence_stride=1,
+      shuffle=True,
+      batch_size=32,)
+
+  ds = ds.map(self.split_window)
+
+  return ds
+
+WindowGenerator.make_dataset = make_dataset
+
+###############################################################################
+# USE
+###############################################################################
+
+@property
+def train(self):
+  return self.make_dataset(self.train_df)
+
+@property
+def val(self):
+  return self.make_dataset(self.val_df)
+
+@property
+def test(self):
+  return self.make_dataset(self.test_df)
+
+@property
+def example(self):
+  """Get and cache an example batch of `inputs, labels` for plotting."""
+  result = getattr(self, '_example', None)
+  if result is None:
+    # No example batch was found, so get one from the `.train` dataset
+    result = next(iter(self.train))
+    # And cache it for next time
+    self._example = result
+  return result
+
+WindowGenerator.train = train
+WindowGenerator.val = val
+WindowGenerator.test = test
+WindowGenerator.example = example
+
+###############################################################################
+# PRINT
+###############################################################################
+# Each element is an (inputs, label) pair
+print(w2.train.element_spec)
+
+for example_inputs, example_labels in w2.train.take(1):
+  print(f'Inputs shape (batch, time, features): {example_inputs.shape}')
+  print(f'Labels shape (batch, time, features): {example_labels.shape}')
+
+
+
+###############################################################################
+# SINGLE STEP WINDOW
+###############################################################################
+
+
+single_step_window = WindowGenerator(
+    input_width=1, label_width=1, shift=1,
+    label_columns=['Temp'])
+single_step_window
+
+
+for example_inputs, example_labels in single_step_window.train.take(1):
+  print(f'Inputs shape (batch, time, features): {example_inputs.shape}')
+  print(f'Labels shape (batch, time, features): {example_labels.shape}')
+
 
 ###############################################################################
 # MODEL BUILDING
 ###############################################################################
 
-#model = tf.keras.Sequential([
-#  tf.keras.layers.Dense(10, activation=tf.nn.relu, input_shape=(6,)),  # input shape required
-#  tf.keras.layers.Dense(10, activation=tf.nn.relu),
-#  tf.keras.layers.Dense(6)
-#])
+class Baseline(tf.keras.Model):
+  def __init__(self, label_index=None):
+    super().__init__()
+    self.label_index = label_index
+
+  def call(self, inputs):
+    if self.label_index is None:
+      return inputs
+    result = inputs[:, :, self.label_index]
+    return result[:, :, tf.newaxis]
 
 
-model = tf.keras.Sequential()
-model.add(
-  tf.keras.layers.Bidirectional(
-    tf.keras.layers.LSTM(
-      units=128,
-      input_shape=(X_train.shape[1], X_train.shape[2])
-    )
-  )
-)
+baseline = Baseline(label_index=column_indices['Temp'])
 
-#model.add(tf.keras.layers.Dense(100, activation=tf.nn.relu))
-model.add(tf.keras.layers.Dropout(rate=0.2))
-model.add(tf.keras.layers.Dense(units=1))
-model.compile(loss='mean_squared_error', optimizer='adam')
+baseline.compile(loss=tf.losses.MeanSquaredError(),
+                 metrics=[tf.metrics.MeanAbsoluteError()])
 
+val_performance = {}
+performance = {}
+val_performance['Baseline'] = baseline.evaluate(single_step_window.val)
+performance['Baseline'] = baseline.evaluate(single_step_window.test, verbose=0)
 
-lstm_model = tf.keras.models.Sequential([
-    # Shape [batch, time, features] => [batch, time, lstm_units]
-    tf.keras.layers.LSTM(32,input_shape=(X_train.shape[1], X_train.shape[2]), return_sequences=True),
-    # Shape => [batch, time, features]
-    tf.keras.layers.Dense(units=1)
-])
+wide_window = WindowGenerator(
+    input_width=120, label_width=120, shift=1,
+    label_columns=['Temp'])
 
+print('Input shape:', wide_window.example[0].shape)
+print('Output shape:', baseline(wide_window.example[0]).shape)
 
-history = lstm_model.fit(
-    X_train, y_train,
-    epochs=5,
-    batch_size=32,
-    validation_split=0.1,
-    shuffle=False
-)
-
-
-
-plt.plot(history.history['loss'], label='train')
-plt.plot(history.history['val_loss'], label='test')
-plt.legend();
+wide_window.plot(baseline)
 plt.show()
-
-
-
-lstm_model.evaluate(X_test, y_test)
-
-y_pred = lstm_model.predict(X_test)
-
-
-
-plt.plot(np.arange(0, len(y_train)), y_train, 'g', label="history")
-plt.plot(np.arange(len(y_train), len(y_train) + len(y_test)), y_test, marker='.', label="true")
-plt.plot(np.arange(len(y_train), len(y_train) + len(y_test)), y_pred, 'r', label="prediction")
-plt.ylabel('Value')
-plt.xlabel('Time Step')
-plt.legend()
-plt.show();
-
-
 
 print('end.')
