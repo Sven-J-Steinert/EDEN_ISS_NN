@@ -118,21 +118,6 @@ class WindowGenerator():
         f'Label indices: {self.label_indices}',
         f'Label column name(s): {self.label_columns}'])
 
-
-###############################################################################
-# WINDOW GENERATOR USAGE
-###############################################################################
-
-
-w1 = WindowGenerator(input_width=24, label_width=1, shift=24,
-                     label_columns=['Temp'])
-print(w1)
-
-w2 = WindowGenerator(input_width=6, label_width=1, shift=1,
-                     label_columns=['Temp'])
-print(w2)
-
-
 ###############################################################################
 # SPLIT WINDOW
 ###############################################################################
@@ -157,25 +142,6 @@ WindowGenerator.split_window = split_window
 ###############################################################################
 #  SPLIT WINDOW USAGE
 ###############################################################################
-
-# Stack three slices, the length of the total window:
-example_window = tf.stack([np.array(train_df[:w2.total_window_size]),
-                           np.array(train_df[100:100+w2.total_window_size]),
-                           np.array(train_df[200:200+w2.total_window_size])])
-
-
-example_inputs, example_labels = w2.split_window(example_window)
-
-print('All shapes are: (batch, time, features)')
-print(f'Window shape: {example_window.shape}')
-print(f'Inputs shape: {example_inputs.shape}')
-print(f'labels shape: {example_labels.shape}')
-
-
-
-w2.example = example_inputs, example_labels
-
-
 
 
 def plot(self, model=None, plot_col='Temp', max_subplots=3):
@@ -211,13 +177,6 @@ def plot(self, model=None, plot_col='Temp', max_subplots=3):
   plt.xlabel('Time [h]')
 
 WindowGenerator.plot = plot
-
-
-#w2.plot()
-#plt.show()
-
-#w2.plot(plot_col='Temp')
-#plt.show()
 
 
 ###############################################################################
@@ -272,18 +231,6 @@ WindowGenerator.val = val
 WindowGenerator.test = test
 WindowGenerator.example = example
 
-###############################################################################
-# PRINT
-###############################################################################
-# Each element is an (inputs, label) pair
-print(w2.train.element_spec)
-
-for example_inputs, example_labels in w2.train.take(1):
-  print(f'Inputs shape (batch, time, features): {example_inputs.shape}')
-  print(f'Labels shape (batch, time, features): {example_labels.shape}')
-
-
-
 
 ###############################################################################
 ###############################################################################
@@ -309,7 +256,6 @@ def compile_and_fit(model, window, patience=2):
 
 
 
-# CHANGE TO COMPLETE TEST SIZE
 OUT_STEPS = 100
 multi_window = WindowGenerator(input_width=100,
                                label_width=OUT_STEPS,
