@@ -71,9 +71,9 @@ print('%')
 
 dataset_GMTF.astype('float64')
 dataset_GMTF.interpolate(method='linear', limit_direction='forward', axis=0, inplace=True)
-print('dropped NAN:', end=' ')
+print('filled. | dropped remaining NAN:', end=' ')
 print(dataset_GMTF.isnull().sum().sum(), end=' ')
-dataset_GMTF.dropna()
+dataset_GMTF = dataset_GMTF.dropna()
 
 print('')
 print('───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────')
@@ -121,9 +121,9 @@ print('%')
 
 dataset_AMS.astype('float64')
 dataset_AMS.interpolate(method='linear', limit_direction='forward', axis=0, inplace=True)
-print('dropped NAN:', end=' ')
+print('filled. | dropped remaining NAN:', end=' ')
 print(dataset_AMS.isnull().sum().sum(), end=' ')
-dataset_AMS.dropna()
+dataset_AMS = dataset_AMS.dropna()
 
 print('')
 print('───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────')
@@ -172,9 +172,9 @@ print('%')
 
 dataset_ILS.astype('float64')
 dataset_ILS.interpolate(method='linear', limit_direction='forward', axis=0, inplace=True)
-print('dropped NAN:', end=' ')
+print('filled. | dropped remaining NAN:', end=' ')
 print(dataset_ILS.isnull().sum().sum(), end=' ')
-dataset_ILS.dropna()
+dataset_ILS = dataset_ILS.dropna()
 
 print('')
 print('───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────')
@@ -241,9 +241,9 @@ print('%')
 
 dataset_NDS.astype('float64')
 dataset_NDS.interpolate(method='linear', limit_direction='forward', axis=0, inplace=True)
-print('dropped NAN:', end=' ')
+print('filled. | dropped remaining NAN:', end=' ')
 print(dataset_NDS.isnull().sum().sum(), end=' ')
-dataset_NDS.dropna()
+dataset_NDS = dataset_NDS.dropna()
 
 print('')
 print('───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────')
@@ -336,8 +336,9 @@ dataset.to_csv('dataset.csv', sep=';', encoding='utf-8')
 print('         done.')
 print('READING dataset.csv', end=' ', flush = True)
 
-dataset_readin = pd.read_csv('dataset.csv',index_col="Date_Time", sep=';',  decimal=",", low_memory=False)
+dataset_readin = pd.read_csv('dataset.csv',index_col="Date_Time", sep=';', low_memory=False)
 dataset_readin.index = pd.to_datetime(dataset_readin.index)
+dataset.index.name = 'Date_Time'
 if dataset_readin.equals(dataset):
     print('     verified.')
 else: print('     mismatch.')
