@@ -32,12 +32,11 @@ dataset_GMTF = pd.read_csv(url_GMTF, dayfirst=True,
     comment='\t', sep=';', skipinitialspace=True, low_memory=False, decimal=',' , thousands='.')
 
 print(dataset_GMTF.shape, end=' ', flush=True)
-print('missing data:', end=' ', flush=True)
+print('NAN:', end=' ', flush=True)
 print(dataset_GMTF.isnull().sum().sum(), end=' ', flush=True)
 
 
-
-print('EDIT', end=' ', flush=True)
+print('| EDIT', end=' ', flush=True)
 datetime_GMTF = pd.to_datetime(dataset_GMTF.index)
 #datetime_GMTF = pd.DatetimeIndex(((datetime_GMTF.asi8/(1e9*60)).round()*1e9*60).astype(np.int64))  # round to flat minutes
 datetime_GMTF = pd.DatetimeIndex(((datetime_GMTF.asi8/(1e10*30)).round()*1e10*30).astype(np.int64))  # round to 5 minute steps
@@ -55,6 +54,7 @@ dataset_GMTF.index = pd.to_datetime(dataset_GMTF.index)
 dataset_GMTF.index.name = 'Date_Time'
 del dataset_GMTF['Placeholder']
 
+
 print('APPLYED ON timeframe', end=' ', flush=True)
 print(dataset_GMTF.shape)
 
@@ -62,15 +62,18 @@ print('')
 print(dataset_GMTF.head())
 print(dataset_GMTF.tail())
 print('')
-print('missing')
-print('number', end=' ')
+print('NAN number', end=' ')
 print(dataset_GMTF.isnull().sum().sum(), end=' ')
 print('| lines', end=' ')
 print(int(dataset_GMTF.isnull().sum().sum()/dataset_GMTF.shape[1]), end=' | ')
 print("%.2f" % ((int(dataset_GMTF.isnull().sum().sum()/dataset_GMTF.shape[1])*100) / dataset_GMTF.shape[0]), end=' ')
 print('%')
 
-dataset_GMTF.astype('float')
+dataset_GMTF.astype('float64')
+dataset_GMTF.interpolate(method='linear', limit_direction='forward', axis=0, inplace=True)
+print('dropped NAN:', end=' ')
+print(dataset_GMTF.isnull().sum().sum(), end=' ')
+dataset_GMTF.dropna()
 
 print('')
 print('───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────')
@@ -82,10 +85,10 @@ dataset_AMS = pd.read_csv(url_AMS,dayfirst=True,
     comment='\t', sep=';', skipinitialspace=True, low_memory=False, decimal=',' , thousands='.')
 
 print(dataset_AMS.shape, end=' ', flush=True)
-print('incomplete data:', end=' ', flush=True)
+print('NAN:', end=' ', flush=True)
 print(dataset_AMS.isnull().sum().sum(), end=' ', flush=True)
 
-print('EDIT', end=' ', flush=True)
+print('| EDIT', end=' ', flush=True)
 datetime_AMS = pd.to_datetime(dataset_AMS.index)
 #datetime_AMS = pd.DatetimeIndex(((datetime_AMS.asi8/(1e9*60)).round()*1e9*60).astype(np.int64))  # round to flat minutes
 datetime_AMS = pd.DatetimeIndex(((datetime_AMS.asi8/(1e10*30)).round()*1e10*30).astype(np.int64))  # round to 5 minute steps
@@ -109,15 +112,18 @@ print('')
 print(dataset_AMS.head())
 print(dataset_AMS.tail())
 print('')
-print('missing')
-print('number', end=' ')
+print('NAN number', end=' ')
 print(dataset_AMS.isnull().sum().sum(), end=' ')
 print('| lines', end=' ')
 print(int(dataset_AMS.isnull().sum().sum()/dataset_AMS.shape[1]), end=' | ')
 print("%.2f" % ((int(dataset_AMS.isnull().sum().sum()/dataset_AMS.shape[1])*100) / dataset_AMS.shape[0]), end=' ')
 print('%')
 
-dataset_AMS.astype('float')
+dataset_AMS.astype('float64')
+dataset_AMS.interpolate(method='linear', limit_direction='forward', axis=0, inplace=True)
+print('dropped NAN:', end=' ')
+print(dataset_AMS.isnull().sum().sum(), end=' ')
+dataset_AMS.dropna()
 
 print('')
 print('───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────')
@@ -128,23 +134,11 @@ dataset_ILS = pd.read_csv(url_ILS,dayfirst=True,
     parse_dates=[['Date', 'Time']], index_col="Date_Time", na_values='NOTVerified',
     comment='\t', sep=';', skipinitialspace=True, low_memory=False, decimal=',' , thousands='.')
 
-dataset_ILS.astype('float')
-print('FIRST CONVERT DONE')
-
 print(dataset_ILS.shape, end=' ', flush=True)
-print('incomplete data:', end=' ', flush=True)
+print('NAN:', end=' ', flush=True)
 print(dataset_ILS.isnull().sum().sum(), end=' ', flush=True)
 
-#NAN_ILS = dataset_ILS[dataset_ILS.isna().any(axis=1)]
-#print(NAN_ILS)
-
-#fix = dataset_ILS['L4-4L RED']
-#fix.to_csv('fix.csv', sep=';', encoding='utf-8')
-
-#fix_readin = pd.read_csv('fix.csv', index_col="Date_Time", na_values='NOTVerified',
-#    comment='\t', sep=';', skipinitialspace=True, low_memory=False, decimal=',' , thousands='.')
-
-print('EDIT', end=' ', flush=True)
+print('| EDIT', end=' ', flush=True)
 datetime_ILS = pd.to_datetime(dataset_ILS.index)
 #datetime_ILS = pd.DatetimeIndex(((datetime_ILS.asi8/(1e9*60)).round()*1e9*60).astype(np.int64))  # round to flat minutes
 datetime_ILS = pd.DatetimeIndex(((datetime_ILS.asi8/(1e10*30)).round()*1e10*30).astype(np.int64))  # round to 5 minute steps
@@ -169,15 +163,18 @@ print('')
 print(dataset_ILS.head())
 print(dataset_ILS.tail())
 print('')
-print('missing')
-print('number', end=' ')
+print('NAN number', end=' ')
 print(dataset_ILS.isnull().sum().sum(), end=' ')
 print('| lines', end=' ')
 print(int(dataset_ILS.isnull().sum().sum()/dataset_ILS.shape[1]), end=' | ')
 print("%.2f" % ((int(dataset_ILS.isnull().sum().sum()/dataset_ILS.shape[1])*100) / dataset_ILS.shape[0]), end=' ')
 print('%')
 
-
+dataset_ILS.astype('float64')
+dataset_ILS.interpolate(method='linear', limit_direction='forward', axis=0, inplace=True)
+print('dropped NAN:', end=' ')
+print(dataset_ILS.isnull().sum().sum(), end=' ')
+dataset_ILS.dropna()
 
 print('')
 print('───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────')
@@ -189,11 +186,11 @@ dataset_NDS = pd.read_csv(url_NDS,dayfirst=True,
     comment='\t', sep=';', skipinitialspace=True, low_memory=False, decimal=',' , thousands='.')
 
 print(dataset_NDS.shape, end=' ', flush=True)
-print('incomplete data:', end=' ', flush=True)
+print('NAN:', end=' ', flush=True)
 print(dataset_NDS.isnull().sum().sum(), end=' ', flush=True)
 
 
-print('EDIT', end=' ', flush=True)
+print('| EDIT', end=' ', flush=True)
 datetime_NDS = pd.to_datetime(dataset_NDS.index)
 #datetime_NDS = pd.DatetimeIndex(((datetime_NDS.asi8/(1e9*60)).round()*1e9*60).astype(np.int64))  # round to flat minutes
 datetime_NDS = pd.DatetimeIndex(((datetime_NDS.asi8/(1e10*30)).round()*1e10*30).astype(np.int64))  # round to 5 minute steps
@@ -213,19 +210,40 @@ del dataset_NDS['Placeholder']
 print('APPLYED ON timeframe', end=' ', flush=True)
 print(dataset_NDS.shape)
 
+dataset_NDS['L1 HP PUMP IRRIGATION SCHEDULE #1'] = (pd.to_timedelta(dataset_NDS['L1 HP PUMP IRRIGATION SCHEDULE #1']).dt.total_seconds())
+dataset_NDS['L1 HP PUMP IRRIGATION SCHEDULE #2'] = (pd.to_timedelta(dataset_NDS['L1 HP PUMP IRRIGATION SCHEDULE #2']).dt.total_seconds())
+dataset_NDS['L2 HP PUMP IRRIGATION SCHEDULE #1'] = (pd.to_timedelta(dataset_NDS['L2 HP PUMP IRRIGATION SCHEDULE #1']).dt.total_seconds())
+dataset_NDS['L2 HP PUMP 2 IRRIGATION SCHEDULE #2'] = (pd.to_timedelta(dataset_NDS['L2 HP PUMP 2 IRRIGATION SCHEDULE #2']).dt.total_seconds())
+dataset_NDS['L3 HP PUMP IRRIGATION SCHEDULE #1'] = (pd.to_timedelta(dataset_NDS['L3 HP PUMP IRRIGATION SCHEDULE #1']).dt.total_seconds())
+dataset_NDS['L3 HP PUMP IRRIGATION SCHEDULE #2'] = (pd.to_timedelta(dataset_NDS['L3 HP PUMP IRRIGATION SCHEDULE #2']).dt.total_seconds())
+dataset_NDS['L4 HP PUMP IRRIGATION SCHEDULE #1'] = (pd.to_timedelta(dataset_NDS['L4 HP PUMP IRRIGATION SCHEDULE #1']).dt.total_seconds())
+dataset_NDS['L4 HP PUMP IRRIGATION SCHEDULE #2'] = (pd.to_timedelta(dataset_NDS['L4 HP PUMP IRRIGATION SCHEDULE #2']).dt.total_seconds())
+dataset_NDS['R1 HP PUMP IRRIGATION SCHEDULE #1'] = (pd.to_timedelta(dataset_NDS['R1 HP PUMP IRRIGATION SCHEDULE #1']).dt.total_seconds())
+dataset_NDS['R1 HP PUMP IRRIGATION SCHEDULE #2'] = (pd.to_timedelta(dataset_NDS['R1 HP PUMP IRRIGATION SCHEDULE #2']).dt.total_seconds())
+dataset_NDS['R2 HP PUMP IRRIGATION SCHEDULE #1'] = (pd.to_timedelta(dataset_NDS['R2 HP PUMP IRRIGATION SCHEDULE #1']).dt.total_seconds())
+dataset_NDS['R2 HP PUMP IRRIGATION SCHEDULE #2'] = (pd.to_timedelta(dataset_NDS['R2 HP PUMP IRRIGATION SCHEDULE #2']).dt.total_seconds())
+dataset_NDS['R3 HP PUMP IRRIGATION SCHEDULE #1'] = (pd.to_timedelta(dataset_NDS['R3 HP PUMP IRRIGATION SCHEDULE #1']).dt.total_seconds())
+dataset_NDS['R3 HP PUMP IRRIGATION SCHEDULE #2'] = (pd.to_timedelta(dataset_NDS['R3 HP PUMP IRRIGATION SCHEDULE #2']).dt.total_seconds())
+dataset_NDS['R4 HP PUMP IRRIGATION SCHEDULE #1'] = (pd.to_timedelta(dataset_NDS['R4 HP PUMP IRRIGATION SCHEDULE #1']).dt.total_seconds())
+dataset_NDS['R4 HP PUMP IRRIGATION SCHEDULE #2'] = (pd.to_timedelta(dataset_NDS['R4 HP PUMP IRRIGATION SCHEDULE #2']).dt.total_seconds())
+
 
 print('')
 print(dataset_NDS.head())
 print(dataset_NDS.tail())
 print('')
-print('missing')
-print('number', end=' ')
+print('NAN number', end=' ')
 print(dataset_NDS.isnull().sum().sum(), end=' ')
 print('| lines', end=' ')
 print(int(dataset_NDS.isnull().sum().sum()/dataset_NDS.shape[1]), end=' | ')
 print("%.2f" % ((int(dataset_NDS.isnull().sum().sum()/dataset_NDS.shape[1])*100) / dataset_NDS.shape[0]), end=' ')
 print('%')
 
+dataset_NDS.astype('float64')
+dataset_NDS.interpolate(method='linear', limit_direction='forward', axis=0, inplace=True)
+print('dropped NAN:', end=' ')
+print(dataset_NDS.isnull().sum().sum(), end=' ')
+dataset_NDS.dropna()
 
 print('')
 print('───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────')
@@ -240,7 +258,7 @@ print(raw_data_TCS.shape, end=' ', flush=True)
 dataset_TCS = raw_data_TCS.copy()
 
 
-print('EDIT', end=' ', flush=True)
+print('| EDIT', end=' ', flush=True)
 datetime_TCS = pd.to_datetime(dataset_TCS.index)
 #datetime_GMTF = pd.DatetimeIndex(((datetime_GMTF.asi8/(1e9*60)).round()*1e9*60).astype(np.int64))  # round to flat minutes
 datetime_TCS = pd.DatetimeIndex(((datetime_TCS.asi8/(1e10*30)).round()*1e10*30).astype(np.int64))  # round to 5 minute steps
@@ -280,22 +298,24 @@ print('')
 print('')
 print('───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────')
 print('COMBINING to final dataset', end=' ', flush = True)
-dataset = pd.concat([timeframe, dataset_GMTF, dataset_AMS, dataset_ILS, dataset_NDS], axis=1, sort=False, join='outer')
+dataset = pd.concat([dataset_GMTF, dataset_AMS, dataset_ILS, dataset_NDS], axis=1, join='inner')
 dataset.index = pd.to_datetime(dataset.index)
 dataset.index.name = 'Date_Time'
-del dataset['Placeholder']
+dataset.astype('float64')
+dataset.dropna()
+
 print(dataset.shape, end=' ', flush = True)
 print(' | order: GTMF AMS ILS NDS   (TCS dropped)')
 print(dataset.head(10))
 print(dataset.tail(10))
 print('')
-print('incomplete numbers:', end=' ')
+print('leftover NAN (should be zero):', end=' ')
 print(dataset.isnull().sum().sum(), end=' | ')
 print("%.2f" % ((dataset.isnull().sum().sum()/(dataset.shape[1]*dataset.shape[0]))*100), end=' ')
 print('%')
 
 ###############################################################################
-# VISUALIZE SAMPLES
+# VISUALIZE SAMPLE COLOUMS
 ###############################################################################
 
 # dataset.astype('float')
