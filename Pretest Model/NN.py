@@ -118,6 +118,8 @@ class WindowGenerator():
         f'Label indices: {self.label_indices}',
         f'Label column name(s): {self.label_columns}'])
 
+
+
 ###############################################################################
 # SPLIT WINDOW
 ###############################################################################
@@ -140,8 +142,9 @@ def split_window(self, features):
 WindowGenerator.split_window = split_window
 
 ###############################################################################
-#  SPLIT WINDOW USAGE
+#  TRAIN | VAL | TEST   PLOT
 ###############################################################################
+
 
 
 def plot(self, model=None, plot_col='Temp', max_subplots=3):
@@ -232,6 +235,7 @@ WindowGenerator.test = test
 WindowGenerator.example = example
 
 
+
 ###############################################################################
 ###############################################################################
 # MULTI STEP
@@ -263,7 +267,7 @@ multi_window = WindowGenerator(input_width=100,
 
 multi_window.plot()
 plt.show()
-print(multi_window)
+
 
 ###############################################################################
 # BASELINE
@@ -301,6 +305,7 @@ repeat_baseline.compile(loss=tf.losses.MeanSquaredError(),
 multi_val_performance['Repeat'] = repeat_baseline.evaluate(multi_window.val)
 multi_performance['Repeat'] = repeat_baseline.evaluate(multi_window.test, verbose=0)
 multi_window.plot(repeat_baseline)
+
 plt.show()
 
 ###############################################################################
