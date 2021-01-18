@@ -185,6 +185,24 @@ dataset_NDS = pd.read_csv(url_NDS,dayfirst=True,
     parse_dates=[['Date', 'Time']], index_col="Date_Time", na_values='NOTVerified',
     comment='\t', sep=';', skipinitialspace=True, low_memory=False, decimal=',' , thousands='.')
 
+# delete SCHEDULES - meaning unclear
+del dataset_NDS['L1 HP PUMP IRRIGATION SCHEDULE #1']
+del dataset_NDS['L1 HP PUMP IRRIGATION SCHEDULE #2']
+del dataset_NDS['L2 HP PUMP IRRIGATION SCHEDULE #1']
+del dataset_NDS['L2 HP PUMP 2 IRRIGATION SCHEDULE #2']
+del dataset_NDS['L3 HP PUMP IRRIGATION SCHEDULE #1']
+del dataset_NDS['L3 HP PUMP IRRIGATION SCHEDULE #2']
+del dataset_NDS['L4 HP PUMP IRRIGATION SCHEDULE #1']
+del dataset_NDS['L4 HP PUMP IRRIGATION SCHEDULE #2']
+del dataset_NDS['R1 HP PUMP IRRIGATION SCHEDULE #1']
+del dataset_NDS['R1 HP PUMP IRRIGATION SCHEDULE #2']
+del dataset_NDS['R2 HP PUMP IRRIGATION SCHEDULE #1']
+del dataset_NDS['R2 HP PUMP IRRIGATION SCHEDULE #2']
+del dataset_NDS['R3 HP PUMP IRRIGATION SCHEDULE #1']
+del dataset_NDS['R3 HP PUMP IRRIGATION SCHEDULE #2']
+del dataset_NDS['R4 HP PUMP IRRIGATION SCHEDULE #1']
+del dataset_NDS['R4 HP PUMP IRRIGATION SCHEDULE #2']
+
 print(dataset_NDS.shape, end=' ', flush=True)
 print('NAN:', end=' ', flush=True)
 print(dataset_NDS.isnull().sum().sum(), end=' ', flush=True)
@@ -209,23 +227,6 @@ del dataset_NDS['Placeholder']
 
 print('APPLYED ON timeframe', end=' ', flush=True)
 print(dataset_NDS.shape)
-
-dataset_NDS['L1 HP PUMP IRRIGATION SCHEDULE #1'] = (pd.to_timedelta(dataset_NDS['L1 HP PUMP IRRIGATION SCHEDULE #1']).dt.total_seconds())
-dataset_NDS['L1 HP PUMP IRRIGATION SCHEDULE #2'] = (pd.to_timedelta(dataset_NDS['L1 HP PUMP IRRIGATION SCHEDULE #2']).dt.total_seconds())
-dataset_NDS['L2 HP PUMP IRRIGATION SCHEDULE #1'] = (pd.to_timedelta(dataset_NDS['L2 HP PUMP IRRIGATION SCHEDULE #1']).dt.total_seconds())
-dataset_NDS['L2 HP PUMP 2 IRRIGATION SCHEDULE #2'] = (pd.to_timedelta(dataset_NDS['L2 HP PUMP 2 IRRIGATION SCHEDULE #2']).dt.total_seconds())
-dataset_NDS['L3 HP PUMP IRRIGATION SCHEDULE #1'] = (pd.to_timedelta(dataset_NDS['L3 HP PUMP IRRIGATION SCHEDULE #1']).dt.total_seconds())
-dataset_NDS['L3 HP PUMP IRRIGATION SCHEDULE #2'] = (pd.to_timedelta(dataset_NDS['L3 HP PUMP IRRIGATION SCHEDULE #2']).dt.total_seconds())
-dataset_NDS['L4 HP PUMP IRRIGATION SCHEDULE #1'] = (pd.to_timedelta(dataset_NDS['L4 HP PUMP IRRIGATION SCHEDULE #1']).dt.total_seconds())
-dataset_NDS['L4 HP PUMP IRRIGATION SCHEDULE #2'] = (pd.to_timedelta(dataset_NDS['L4 HP PUMP IRRIGATION SCHEDULE #2']).dt.total_seconds())
-dataset_NDS['R1 HP PUMP IRRIGATION SCHEDULE #1'] = (pd.to_timedelta(dataset_NDS['R1 HP PUMP IRRIGATION SCHEDULE #1']).dt.total_seconds())
-dataset_NDS['R1 HP PUMP IRRIGATION SCHEDULE #2'] = (pd.to_timedelta(dataset_NDS['R1 HP PUMP IRRIGATION SCHEDULE #2']).dt.total_seconds())
-dataset_NDS['R2 HP PUMP IRRIGATION SCHEDULE #1'] = (pd.to_timedelta(dataset_NDS['R2 HP PUMP IRRIGATION SCHEDULE #1']).dt.total_seconds())
-dataset_NDS['R2 HP PUMP IRRIGATION SCHEDULE #2'] = (pd.to_timedelta(dataset_NDS['R2 HP PUMP IRRIGATION SCHEDULE #2']).dt.total_seconds())
-dataset_NDS['R3 HP PUMP IRRIGATION SCHEDULE #1'] = (pd.to_timedelta(dataset_NDS['R3 HP PUMP IRRIGATION SCHEDULE #1']).dt.total_seconds())
-dataset_NDS['R3 HP PUMP IRRIGATION SCHEDULE #2'] = (pd.to_timedelta(dataset_NDS['R3 HP PUMP IRRIGATION SCHEDULE #2']).dt.total_seconds())
-dataset_NDS['R4 HP PUMP IRRIGATION SCHEDULE #1'] = (pd.to_timedelta(dataset_NDS['R4 HP PUMP IRRIGATION SCHEDULE #1']).dt.total_seconds())
-dataset_NDS['R4 HP PUMP IRRIGATION SCHEDULE #2'] = (pd.to_timedelta(dataset_NDS['R4 HP PUMP IRRIGATION SCHEDULE #2']).dt.total_seconds())
 
 
 print('')
@@ -304,6 +305,17 @@ dataset.index.name = 'Date_Time'
 dataset.astype('float64')
 dataset.dropna()
 
+# delete completely constant features
+del dataset['SES TEMPERATURE']
+del dataset['AMS-SES-HUMIDIFIER AIR IN']
+del dataset['FEG LVL SWITCH COND MAX']
+del dataset['FEG  TEMPERATURE PHM 2']
+del dataset['FEG HUMIDITY PHM 2']
+del dataset['EC Setpoint']
+del dataset['pH Setpoint']
+del dataset['EC Setpoint 2']
+del dataset['pH Setpoint 2']
+
 print(dataset.shape, end=' ', flush = True)
 print(' | order: GTMF AMS ILS NDS   (TCS dropped)')
 print(dataset.head(10))
@@ -314,17 +326,6 @@ print(dataset.isnull().sum().sum(), end=' | ')
 print("%.2f" % ((dataset.isnull().sum().sum()/(dataset.shape[1]*dataset.shape[0]))*100), end=' ')
 print('%')
 
-###############################################################################
-# VISUALIZE SAMPLE COLOUMS
-###############################################################################
-
-# dataset.astype('float')
-# print plot
-plot_cols = ['TCS TEMP OUT EXIT','SES HUMIDITY 1','L2-1R','LEVEL SENSOR TANK 1']
-plot_features = dataset[plot_cols]
-plot_features.index = dataset.index
-_ = plot_features.plot(subplots=True)
-plt.show()
 
 ###############################################################################
 # WRITE DATASET

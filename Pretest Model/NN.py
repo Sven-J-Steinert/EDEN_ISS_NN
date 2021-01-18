@@ -60,6 +60,16 @@ test_df = df[int(n*0.9):]
 
 num_features = df.shape[1]
 
+
+print('NaN df:', end=' ')
+print(df.isna().sum().sum())
+print('NaN training:', end=' ')
+print(train_df.isna().sum().sum())
+print('NaN validation:', end=' ')
+print(val_df.isna().sum().sum())
+print('NaN testing:', end=' ')
+print(test_df.isna().sum().sum())
+
 ###############################################################################
 # FEATURE SCALING
 ###############################################################################
@@ -76,6 +86,16 @@ test_df = (test_df - train_mean) / train_std
 print('Training Dataset')
 print(train_df.tail())
 print('')
+
+
+print('NaN df:', end=' ')
+print(df.isna().sum().sum())
+print('NaN training:', end=' ')
+print(train_df.isna().sum().sum())
+print('NaN validation:', end=' ')
+print(val_df.isna().sum().sum())
+print('NaN testing:', end=' ')
+print(test_df.isna().sum().sum())
 
 ###############################################################################
 # WINDOW CLASS
