@@ -237,11 +237,11 @@ WindowGenerator.example = example
 
 
 
+
 ###############################################################################
+# MULTI STEP MODELS
 ###############################################################################
-# MULTI STEP
-###############################################################################
-###############################################################################
+
 
 MAX_EPOCHS = 10
 
@@ -270,9 +270,6 @@ multi_window.plot()
 plt.show()
 
 
-###############################################################################
-# BASELINE
-###############################################################################
 print('┌────────────────┐')
 print('│ BASELINE MODEL │')
 print('└────────────────┘')
@@ -292,10 +289,6 @@ multi_performance['Last'] = last_baseline.evaluate(multi_window.test, verbose=0)
 multi_window.plot(last_baseline)
 plt.show()
 
-
-###############################################################################
-# LINEAR
-###############################################################################
 
 print('┌────────────────┐')
 print('│  LINEAR MODEL  │')
@@ -319,10 +312,6 @@ multi_val_performance['Linear'] = multi_linear_model.evaluate(multi_window.val)
 multi_performance['Linear'] = multi_linear_model.evaluate(multi_window.test, verbose=0)
 multi_window.plot(multi_linear_model)
 plt.show()
-
-###############################################################################
-# DENSE
-###############################################################################
 
 print('┌────────────────┐')
 print('│  DENSE MODEL   │')
@@ -348,10 +337,6 @@ multi_val_performance['Dense'] = multi_dense_model.evaluate(multi_window.val)
 multi_performance['Dense'] = multi_dense_model.evaluate(multi_window.test, verbose=0)
 multi_window.plot(multi_dense_model)
 plt.show()
-
-###############################################################################
-# CNN
-###############################################################################
 
 print('┌────────────────┐')
 print('│ CONVOLUTIONAL  │')
@@ -379,10 +364,6 @@ multi_performance['Conv'] = multi_conv_model.evaluate(multi_window.test, verbose
 multi_window.plot(multi_conv_model)
 plt.show()
 
-###############################################################################
-# RNN LSTM
-###############################################################################
-
 print('┌────────────────┐')
 print('│   LSTM MODEL   │')
 print('└────────────────┘')
@@ -406,10 +387,6 @@ multi_val_performance['LSTM'] = multi_lstm_model.evaluate(multi_window.val)
 multi_performance['LSTM'] = multi_lstm_model.evaluate(multi_window.test, verbose=0)
 multi_window.plot(multi_lstm_model)
 plt.show()
-
-###############################################################################
-# RNN AUTOREGGRESSIVE
-###############################################################################
 
 print('┌────────────────┐')
 print('│   AUTO LSTM    │')
@@ -508,5 +485,9 @@ plt.show()
 for name, value in multi_performance.items():
   print(f'{name:8s}: {value[1]:0.4f}')
 
+
+###############################################################################
+# SAVING MODELS
+###############################################################################
 
 print('end.')
