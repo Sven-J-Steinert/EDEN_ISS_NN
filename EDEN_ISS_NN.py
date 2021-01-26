@@ -1,4 +1,5 @@
 import os
+import io
 import datetime
 
 import IPython
@@ -20,29 +21,79 @@ from sklearn.preprocessing import RobustScaler
 
 print('Tensorflow Version ' + tf.__version__)
 
+
+###############################################################################
+# SELECTING MODEL TARGET
+###############################################################################
+print('')
+print('───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────')
+print('Select the model target:')
+print('1) System Variables: Time Controlled')
+print('2) System Variables: Environment Controlled')
+print('3) Plant')
+print('4) identify time controlled variables')
+
+num_1 = int(input("Select option: "))
+options = {1 : 'System Variables/Time Controlled',
+           2 : 'System Variables/Environment Controlled',
+           3 : 'Plant',
+           4 : 'identify'
+}
+model_target = options[num_1]
+
+
 ###############################################################################
 # LOADING DATA
 ###############################################################################
+print('')
+print('───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────')
+print('Select dataset to load:')
+print('1) dataset_full.csv')
+print('2) dataset_time_controlled.csv')
+print('3) dataset_environment_controlled.csv')
+print('4) pretest.csv')
 
-raw_dataset = pd.read_csv('dataset.csv', parse_dates=['Date_Time'], index_col="Date_Time",
+num = int(input("Select option: "))
+options = {1 : 'dataset_full.csv',
+           2 : 'dataset_time_controlled.csv',
+           3 : 'dataset_environment_controlled.csv',
+           4 : 'pretest.csv',
+}
+URL = 'datasets/' + options[num]
+
+print('READING ' + URL, end=' ')
+df = pd.read_csv(URL, parse_dates=['Date_Time'], index_col="Date_Time",
                           na_values='NaN', comment='\t',
                           sep=';', skipinitialspace=True)
-print(raw_dataset.shape)
+print(df.shape)
 
+if options[num] == 'dataset_full.csv':
+    time_controlled_features = ['L1-2L BLUE','L1-2R BLUE','L1-4L BLUE','L1-4R BLUE','R4-4R BLUE','R4-4L BLUE','L2-1L BLUE','L2-1R BLUE','L2-2L BLUE','L2-2R BLUE','L2-3L BLUE','L2-3R BLUE','L2-4L BLUE','L2-4R BLUE','L3-1L BLUE','L3-2L BLUE','L3-1R BLUE','L3-2R BLUE','L3-3L BLUE','L3-3R BLUE','L3-4L BLUE','L3-4R BLUE','L4-1L BLUE','L4-1R BLUE','L4-2L BLUE','L4-2R BLUE','L4-3L BLUE','L4-3R BLUE','L4-4L BLUE','L4-4R BLUE','R1-2R BLUE','R1-2L BLUE','R1-4R BLUE','R1-4L BLUE','R2-2R BLUE','R2-2L BLUE','R2-4R BLUE','R2-4L BLUE','R3-2/4R BLUE','R3-2/4L BLUE','R4-2R BLUE','R4-2L BLUE','L1-2L RED','L1-2R RED','L1-4L RED','L1-4R RED','R4-4R RED','R4-4L RED','L2-1L RED','L2-1R RED','L2-2L RED','L2-2R RED','L2-3L RED','L2-3R RED','L2-4L RED','L2-4R RED','L3-1L RED','L3-2L RED','L3-1R RED','L3-2R RED','L3-3L RED','L3-3R RED','L3-4L RED','L3-4R RED','L4-1L RED','L4-1R RED','L4-2L RED','L4-2R RED','L4-3L RED','L4-3R RED','L4-4L RED','L4-4R RED','R1-2R RED','R1-2L RED','R1-4R RED','R1-4L RED','R2-2R RED','R2-2L RED','R2-4R RED','R2-4L RED','R3-2/4R RED','R3-2/4L RED','R4-2R RED','R4-2L RED','L1-2L FAR RED','L1-2R FAR RED','L1-4L FAR RED']
 
-df = raw_dataset.copy()
+    test_features = ['FEG AIR FLOW','NDS-BASE DOSING PUMP ','NDS-ACID SOLENOID','PDS TEMP CONTROL BOX','SUBFLOOR CPO 2','AMS-FEG-FAN AIR LOOP 1','AMS-FEG-FAN AIR LOOP 2','SES TEMP AIR IN 1','FEG HUMIDITY TARGET','NDS-ACID DOSING PUMP ','NDS-PUMP FW ','FLOW METER TANK 2','SES TEMP AIR IN 2','NDS-SOLENOID FW TANK 1','NDS-REC PUMP TANK 1','NDS-REC PUMP TANK 2','NDS-SOLENOID FW TANK 2','NDS-A DOSING PUMP','NDS-B DOSING PUMP','SES DOOR STATUS']
+    df = df[test_features]
+
 df.astype('float64')
 print(df.tail())
 print('')
 print('missing variables:', end=' ')
 print(df.isna().sum().sum())
 
+# short to one feature
+if options[num] == 'dataset_time_controlled.csv':
+    df = df.iloc[:, 0:1]
+
+
+
 ###############################################################################
 # VISUALIZE DATA
 ###############################################################################
 
-plot_cols = ['TCS TEMP OUT EXIT','SES HUMIDITY 1','L2-1R','LEVEL SENSOR TANK 1']
-plot_features = df[plot_cols]
+# plot first 6 columns
+#plot_features = df.iloc[:, 0:6]
+# plot all
+plot_features = df
+print(plot_features)
 plot_features.index = df.index
 _ = plot_features.plot(subplots=True)
 plt.show()
@@ -59,22 +110,40 @@ train_df = df[0:int(n*0.7)]
 val_df = df[int(n*0.7):int(n*0.9)]
 test_df = df[int(n*0.9):]
 
-num_features = df.shape[1]
+# usually input features = output features
+num_input_features = df.shape[1]
+num_output_features = df.shape[1]
+
+#if options[num] == 'dataset_full.csv':
+#    num_input_features = df.shape[1]
+#    num_output_features = df.shape[1] - len(time_controlled_features)
+
+print()
+print('FEATURES')
+print('input: ', end=' ')
+print(num_input_features)
+print('output: ', end=' ')
+print(num_output_features)
 
 
 ###############################################################################
 # FEATURE SCALING
 ###############################################################################
 print('')
-print('scaling features...')
+print('scale features?  [y]/ n', end=' ', flush=True)
 
-train_mean = train_df.mean()
-train_std = train_df.std()
+scale_user = input()
+if ( scale_user == 'y' ) or ( scale_user == '' ) :
+    train_mean = train_df.mean()
+    train_std = train_df.std()
 
+    train_df = (train_df - train_mean) / train_std
+    val_df = (val_df - train_mean) / train_std
+    test_df = (test_df - train_mean) / train_std
+    print('-> features scaled.')
+else:
+    print('-> features not scaled.')
 
-train_df = (train_df - train_mean) / train_std
-val_df = (val_df - train_mean) / train_std
-test_df = (test_df - train_mean) / train_std
 
 
 
@@ -146,9 +215,11 @@ WindowGenerator.split_window = split_window
 #  TRAIN | VAL | TEST   PLOT
 ###############################################################################
 
+print('visualizing first feature: ', end=' ')
+print(df.columns)
+print('')
 
-
-def plot(self, model=None, plot_col='LEVEL SENSOR TANK 1', max_subplots=3):
+def plot(self, model=None, plot_col=df.columns, max_subplots=3):
   inputs, labels = self.example
   plt.figure(figsize=(12, 8))
   plot_col_index = self.column_indices[plot_col]
@@ -178,7 +249,7 @@ def plot(self, model=None, plot_col='LEVEL SENSOR TANK 1', max_subplots=3):
     if n == 0:
       plt.legend()
 
-  plt.xlabel('Time [h]')
+  plt.xlabel('Time Steps')
 
 WindowGenerator.plot = plot
 
@@ -195,7 +266,7 @@ def make_dataset(self, data):
       sequence_length=self.total_window_size,
       sequence_stride=1,
       shuffle=True,
-      batch_size=10)
+      batch_size=32)
 
   ds = ds.map(self.split_window)
 
@@ -243,7 +314,7 @@ WindowGenerator.example = example
 ###############################################################################
 
 
-MAX_EPOCHS = 10
+MAX_EPOCHS = 100
 
 def compile_and_fit(model, window, patience=2):
   early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
@@ -261,13 +332,15 @@ def compile_and_fit(model, window, patience=2):
 
 
 
-OUT_STEPS = 100
-multi_window = WindowGenerator(input_width=100,
+OUT_STEPS = 288
+multi_window = WindowGenerator(input_width=288,
                                label_width=OUT_STEPS,
                                shift=OUT_STEPS)
 
-multi_window.plot()
-plt.show()
+#multi_window.plot()
+#
+#plt.show()
+#plt.pause(0.001)
 
 
 print('┌────────────────┐')
@@ -286,112 +359,153 @@ multi_performance = {}
 
 multi_val_performance['Last'] = last_baseline.evaluate(multi_window.val)
 multi_performance['Last'] = last_baseline.evaluate(multi_window.test, verbose=0)
-multi_window.plot(last_baseline)
-plt.show()
+#multi_window.plot(last_baseline)
+#plt.show()
 
 
-print('┌────────────────┐')
-print('│  LINEAR MODEL  │')
-print('└────────────────┘')
+class RepeatBaseline(tf.keras.Model):
+  def call(self, inputs):
+    return inputs
 
-multi_linear_model = tf.keras.Sequential([
-    # Take the last time-step.
-    # Shape [batch, time, features] => [batch, 1, features]
-    tf.keras.layers.Lambda(lambda x: x[:, -1:, :]),
-    # Shape => [batch, 1, out_steps*features]
-    tf.keras.layers.Dense(OUT_STEPS*num_features,
-                          kernel_initializer=tf.initializers.zeros),
-    # Shape => [batch, out_steps, features]
-    tf.keras.layers.Reshape([OUT_STEPS, num_features])
-])
+def compute_repeat():
+    print('┌────────────────┐')
+    print('│  REPEAT MODEL  │')
+    print('└────────────────┘')
 
-history = compile_and_fit(multi_linear_model, multi_window)
+    global repeat_baseline
 
-IPython.display.clear_output()
-multi_val_performance['Linear'] = multi_linear_model.evaluate(multi_window.val)
-multi_performance['Linear'] = multi_linear_model.evaluate(multi_window.test, verbose=0)
-multi_window.plot(multi_linear_model)
-plt.show()
+    repeat_baseline = RepeatBaseline()
+    repeat_baseline.compile(loss=tf.losses.MeanSquaredError(),
+                            metrics=[tf.metrics.MeanAbsoluteError()])
 
-print('┌────────────────┐')
-print('│  DENSE MODEL   │')
-print('└────────────────┘')
+    multi_val_performance['Repeat'] = repeat_baseline.evaluate(multi_window.val)
+    multi_performance['Repeat'] = repeat_baseline.evaluate(multi_window.test, verbose=0)
+    multi_window.plot(repeat_baseline)
 
-multi_dense_model = tf.keras.Sequential([
-    # Take the last time step.
-    # Shape [batch, time, features] => [batch, 1, features]
-    tf.keras.layers.Lambda(lambda x: x[:, -1:, :]),
-    # Shape => [batch, 1, dense_units]
-    tf.keras.layers.Dense(512, activation='relu'),
-    # Shape => [batch, out_steps*features]
-    tf.keras.layers.Dense(OUT_STEPS*num_features,
-                          kernel_initializer=tf.initializers.zeros),
-    # Shape => [batch, out_steps, features]
-    tf.keras.layers.Reshape([OUT_STEPS, num_features])
-])
+    plt.show()
+    plt.pause(0.001)
 
-history = compile_and_fit(multi_dense_model, multi_window)
 
-IPython.display.clear_output()
-multi_val_performance['Dense'] = multi_dense_model.evaluate(multi_window.val)
-multi_performance['Dense'] = multi_dense_model.evaluate(multi_window.test, verbose=0)
-multi_window.plot(multi_dense_model)
-plt.show()
+def compute_linear():
+    print('┌────────────────┐')
+    print('│  LINEAR MODEL  │')
+    print('└────────────────┘')
 
-print('┌────────────────┐')
-print('│ CONVOLUTIONAL  │')
-print('└────────────────┘')
+    global multi_linear_model
 
-CONV_WIDTH = 3
-multi_conv_model = tf.keras.Sequential([
-    # Shape [batch, time, features] => [batch, CONV_WIDTH, features]
-    tf.keras.layers.Lambda(lambda x: x[:, -CONV_WIDTH:, :]),
-    # Shape => [batch, 1, conv_units]
-    tf.keras.layers.Conv1D(256, activation='relu', kernel_size=(CONV_WIDTH)),
-    # Shape => [batch, 1,  out_steps*features]
-    tf.keras.layers.Dense(OUT_STEPS*num_features,
-                          kernel_initializer=tf.initializers.zeros),
-    # Shape => [batch, out_steps, features]
-    tf.keras.layers.Reshape([OUT_STEPS, num_features])
-])
+    multi_linear_model = tf.keras.Sequential([
+        # Take the last time-step.
+        # Shape [batch, time, features] => [batch, 1, features]
+        tf.keras.layers.Lambda(lambda x: x[:, -1:, :]),
+        # Shape => [batch, 1, out_steps*features]
+        tf.keras.layers.Dense(OUT_STEPS*num_input_features,
+                              kernel_initializer=tf.initializers.zeros),
+        # Shape => [batch, out_steps, features]
+        tf.keras.layers.Reshape([OUT_STEPS, num_output_features])
+    ])
 
-history = compile_and_fit(multi_conv_model, multi_window)
+    history = compile_and_fit(multi_linear_model, multi_window)
 
-IPython.display.clear_output()
+    IPython.display.clear_output()
+    multi_val_performance['Linear'] = multi_linear_model.evaluate(multi_window.val)
+    multi_performance['Linear'] = multi_linear_model.evaluate(multi_window.test, verbose=0)
+    multi_window.plot(multi_linear_model)
 
-multi_val_performance['Conv'] = multi_conv_model.evaluate(multi_window.val)
-multi_performance['Conv'] = multi_conv_model.evaluate(multi_window.test, verbose=0)
-multi_window.plot(multi_conv_model)
-plt.show()
+    plt.show()
+    plt.pause(0.001)
 
-print('┌────────────────┐')
-print('│   LSTM MODEL   │')
-print('└────────────────┘')
+def compute_dense():
+    print('┌────────────────┐')
+    print('│  DENSE MODEL   │')
+    print('└────────────────┘')
 
-multi_lstm_model = tf.keras.Sequential([
-    # Shape [batch, time, features] => [batch, lstm_units]
-    # Adding more `lstm_units` just overfits more quickly.
-    tf.keras.layers.LSTM(32, return_sequences=False),
-    # Shape => [batch, out_steps*features]
-    tf.keras.layers.Dense(OUT_STEPS*num_features,
-                          kernel_initializer=tf.initializers.zeros),
-    # Shape => [batch, out_steps, features]
-    tf.keras.layers.Reshape([OUT_STEPS, num_features])
-])
+    global multi_dense_model
 
-history = compile_and_fit(multi_lstm_model, multi_window)
+    multi_dense_model = tf.keras.Sequential([
+        # Take the last time step.
+        # Shape [batch, time, features] => [batch, 1, features]
+        tf.keras.layers.Lambda(lambda x: x[:, -1:, :]),
+        # Shape => [batch, 1, dense_units]
+        tf.keras.layers.Dense(512, activation='relu'),
+        # Shape => [batch, out_steps*features]
+        tf.keras.layers.Dense(OUT_STEPS*num_input_features,
+                              kernel_initializer=tf.initializers.zeros),
+        # Shape => [batch, out_steps, features]
+        tf.keras.layers.Reshape([OUT_STEPS, num_output_features])
+    ])
 
-IPython.display.clear_output()
+    history = compile_and_fit(multi_dense_model, multi_window)
 
-multi_val_performance['LSTM'] = multi_lstm_model.evaluate(multi_window.val)
-multi_performance['LSTM'] = multi_lstm_model.evaluate(multi_window.test, verbose=0)
-multi_window.plot(multi_lstm_model)
-plt.show()
+    IPython.display.clear_output()
+    multi_val_performance['Dense'] = multi_dense_model.evaluate(multi_window.val)
+    multi_performance['Dense'] = multi_dense_model.evaluate(multi_window.test, verbose=0)
+    multi_window.plot(multi_dense_model)
 
-print('┌────────────────┐')
-print('│   AUTO LSTM    │')
-print('└────────────────┘')
+    plt.show()
+    plt.pause(0.001)
 
+def compute_conv():
+    print('┌────────────────┐')
+    print('│ CONVOLUTIONAL  │')
+    print('└────────────────┘')
+
+    global multi_conv_model
+
+    CONV_WIDTH = 3
+    multi_conv_model = tf.keras.Sequential([
+        # Shape [batch, time, features] => [batch, CONV_WIDTH, features]
+        tf.keras.layers.Lambda(lambda x: x[:, -CONV_WIDTH:, :]),
+        # Shape => [batch, 1, conv_units]
+        tf.keras.layers.Conv1D(256, activation='relu', kernel_size=(CONV_WIDTH)),
+        # Shape => [batch, 1,  out_steps*features]
+        tf.keras.layers.Dense(OUT_STEPS*num_input_features,
+                              kernel_initializer=tf.initializers.zeros),
+        # Shape => [batch, out_steps, features]
+        tf.keras.layers.Reshape([OUT_STEPS, num_output_features])
+    ])
+
+    history = compile_and_fit(multi_conv_model, multi_window)
+
+    IPython.display.clear_output()
+
+    multi_val_performance['Conv'] = multi_conv_model.evaluate(multi_window.val)
+    multi_performance['Conv'] = multi_conv_model.evaluate(multi_window.test, verbose=0)
+    multi_window.plot(multi_conv_model)
+
+    plt.show()
+    plt.pause(0.001)
+
+def compute_lstm():
+    print('┌────────────────┐')
+    print('│   LSTM MODEL   │')
+    print('└────────────────┘')
+
+    global multi_lstm_model
+
+    multi_lstm_model = tf.keras.Sequential([
+        # Shape [batch, time, features] => [batch, lstm_units]
+        # Adding more `lstm_units` just overfits more quickly.
+        tf.keras.layers.LSTM(32, return_sequences=False),
+        # Shape => [batch, out_steps*features]
+        tf.keras.layers.Dense(OUT_STEPS*num_input_features,
+                              kernel_initializer=tf.initializers.zeros),
+        # Shape => [batch, out_steps, features]
+        tf.keras.layers.Reshape([OUT_STEPS, num_output_features])
+    ])
+
+    history = compile_and_fit(multi_lstm_model, multi_window)
+
+    IPython.display.clear_output()
+
+    multi_val_performance['LSTM'] = multi_lstm_model.evaluate(multi_window.val)
+    multi_performance['LSTM'] = multi_lstm_model.evaluate(multi_window.test, verbose=0)
+    multi_window.plot(multi_lstm_model)
+
+    plt.show()
+    plt.pause(0.001)
+
+
+# for Auto LSTM
 class FeedBack(tf.keras.Model):
   def __init__(self, units, out_steps):
     super().__init__()
@@ -400,10 +514,9 @@ class FeedBack(tf.keras.Model):
     self.lstm_cell = tf.keras.layers.LSTMCell(units)
     # Also wrap the LSTMCell in an RNN to simplify the `warmup` method.
     self.lstm_rnn = tf.keras.layers.RNN(self.lstm_cell, return_state=True)
-    self.dense = tf.keras.layers.Dense(num_features)
+    self.dense = tf.keras.layers.Dense(num_input_features)
 
-feedback_model = FeedBack(units=32, out_steps=OUT_STEPS)
-
+# for Auto LSTM
 def warmup(self, inputs):
   # inputs.shape => (batch, time, features)
   # x.shape => (batch, lstm_units)
@@ -413,12 +526,7 @@ def warmup(self, inputs):
   prediction = self.dense(x)
   return prediction, state
 
-FeedBack.warmup = warmup
-
-prediction, state = feedback_model.warmup(multi_window.example[0])
-print(prediction.shape)
-
-
+# for Auto LSTM
 def call(self, inputs, training=None):
   # Use a TensorArray to capture dynamically unrolled outputs.
   predictions = []
@@ -446,19 +554,65 @@ def call(self, inputs, training=None):
   predictions = tf.transpose(predictions, [1, 0, 2])
   return predictions
 
-FeedBack.call = call
 
-print('Output shape (batch, time, features): ', feedback_model(multi_window.example[0]).shape)
 
-history = compile_and_fit(feedback_model, multi_window)
+def compute_auto_lstm():
+    print('┌────────────────┐')
+    print('│   AUTO LSTM    │')
+    print('└────────────────┘')
 
-IPython.display.clear_output()
+    feedback_model = FeedBack(units=32, out_steps=OUT_STEPS)
+    FeedBack.warmup = warmup
 
-multi_val_performance['AR LSTM'] = feedback_model.evaluate(multi_window.val)
-multi_performance['AR LSTM'] = feedback_model.evaluate(multi_window.test, verbose=0)
-multi_window.plot(feedback_model)
-plt.show()
+    prediction, state = feedback_model.warmup(multi_window.example[0])
+    prediction.shape
 
+    FeedBack.call = call
+
+    print('Output shape (batch, time, features): ', feedback_model(multi_window.example[0]).shape)
+
+    history = compile_and_fit(feedback_model, multi_window)
+
+    IPython.display.clear_output()
+
+    multi_val_performance['AR LSTM'] = feedback_model.evaluate(multi_window.val)
+    multi_performance['AR LSTM'] = feedback_model.evaluate(multi_window.test, verbose=0)
+    multi_window.plot(feedback_model)
+
+    plt.show()
+    plt.pause(0.001)
+
+
+
+def compute_all():
+    compute_repeat()
+    compute_linear()
+    compute_dense()
+    compute_conv()
+    compute_lstm()
+    #compute_auto_lstm()
+
+
+
+print('Select Model to compute:')
+print('0) Repeat')
+print('1) Linear')
+print('2) Dense')
+print('3) Convolutional')
+print('4) LSTM')
+print('5) Auto LSTM')
+print('6) all')
+num = int(input("Select option: "))
+options = {0 : compute_repeat,
+           1 : compute_linear,
+           2 : compute_dense,
+           3 : compute_conv,
+           4 : compute_lstm,
+           5 : compute_auto_lstm,
+           6 : compute_all,
+
+}
+options[num]()
 
 ###############################################################################
 # PERFORMANCE
@@ -470,7 +624,7 @@ width = 0.3
 
 metric_name = 'mean_absolute_error'
 
-metric_index = multi_lstm_model.metrics_names.index('mean_absolute_error')
+metric_index = last_baseline.metrics_names.index('mean_absolute_error')
 val_mae = [v[metric_index] for v in multi_val_performance.values()]
 test_mae = [v[metric_index] for v in multi_performance.values()]
 
@@ -482,12 +636,56 @@ plt.ylabel(f'MAE (average over all times and outputs)')
 _ = plt.legend()
 plt.show()
 
+print('')
+print('┌──── summary ─────┐')
 for name, value in multi_performance.items():
-  print(f'{name:8s}: {value[1]:0.4f}')
+  print('│ ' + f'{name:8s}: {value[1]:0.4f}' + ' │')
+print('└──────────────────┘')
 
+with io.open('./models/' + model_target + '/summary.txt', "a", encoding="utf-8") as f:
+    f.write("┌──── summary ─────┐\n")
+    for name, value in multi_performance.items():
+      f.write('│ ' + f'{name:8s}: {value[1]:0.4f}' + ' │\n')
+    f.write('└──────────────────┘\n')
+    f.write('\n')
+    f.close()
 
 ###############################################################################
 # SAVING MODELS
 ###############################################################################
+print('')
+print('saving at ' + './models/' + model_target)
 
+#multi_lstm_model.save('./models/' + model_target + '/REPEAT.h5', save_format="tf")
+
+try:
+    multi_linear_model.save_weights('models/' + model_target + '\LINEAR.h5')
+    print('LINEAR.h5 saved')
+except: print('', end='')
+try:
+    multi_dense_model.save_weights('models/' + model_target + '\DENSE.h5')
+    print('DENSE.h5 saved')
+except: print('', end='')
+try:
+    multi_conv_model.save_weights('models/' + model_target + '\CONV.h5')
+    print('CONV.h5 saved')
+except: print('', end='')
+try:
+    multi_lstm_model.save_weights('models/' + model_target + '\LSTM.h5')
+    print('LSTM.h5 saved')
+except: print('', end='')
+try:
+    feedback_model.save_weights('models/' + model_target + '\AR_LSTM.h5')
+    print('AR_LSTM.h5 saved')
+except: print('', end='')
+
+
+###############################################################################
+# LOADING MODELS
+###############################################################################
+
+#res50_model = load_model('my_model.h5')
+#res50_model.summary()
+#res50_model.get_weights()
 print('end.')
+end = input()

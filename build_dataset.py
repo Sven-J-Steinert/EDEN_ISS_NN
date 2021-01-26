@@ -25,7 +25,7 @@ print(timeframe.tail())
 print('')
 print('───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────')
 print("LOADING General MTF", end=' ', flush=True)
-url_GMTF = 'data_GeneralMTF.csv'
+url_GMTF = 'data\data_GeneralMTF.csv'
 
 dataset_GMTF = pd.read_csv(url_GMTF, dayfirst=True,
     parse_dates=[['Date', 'Time']], index_col="Date_Time", na_values='NOTVerified',
@@ -78,7 +78,7 @@ dataset_GMTF = dataset_GMTF.dropna()
 print('')
 print('───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────')
 print("LOADING AMS", end=' ', flush=True)
-url_AMS = 'data_AMS.csv'
+url_AMS = 'data\data_AMS.csv'
 
 dataset_AMS = pd.read_csv(url_AMS,dayfirst=True,
     parse_dates=[['Date', 'Time']], index_col="Date_Time", na_values='NOTVerified',
@@ -128,7 +128,7 @@ dataset_AMS = dataset_AMS.dropna()
 print('')
 print('───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────')
 print("LOADING ILS", end=' ', flush=True)
-url_ILS = 'data_ILS.csv'
+url_ILS = 'data\data_ILS.csv'
 
 dataset_ILS = pd.read_csv(url_ILS,dayfirst=True,
     parse_dates=[['Date', 'Time']], index_col="Date_Time", na_values='NOTVerified',
@@ -179,7 +179,7 @@ dataset_ILS = dataset_ILS.dropna()
 print('')
 print('───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────')
 print("LOADING NDS", end=' ', flush=True)
-url_NDS = 'data_NDS.csv'
+url_NDS = 'data\data_NDS.csv'
 
 dataset_NDS = pd.read_csv(url_NDS,dayfirst=True,
     parse_dates=[['Date', 'Time']], index_col="Date_Time", na_values='NOTVerified',
@@ -249,7 +249,7 @@ dataset_NDS = dataset_NDS.dropna()
 print('')
 print('───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────')
 print("LOADING TCS", end=' ', flush=True)
-url_TCS = 'data_TCS.csv'
+url_TCS = 'data\data_TCS.csv'
 
 raw_data_TCS = pd.read_csv(url_TCS, dayfirst=True,
     parse_dates=[['Date', 'Time']], index_col="Date_Time", na_values='NOTVerified',
@@ -305,19 +305,60 @@ dataset.index.name = 'Date_Time'
 dataset.astype('float64')
 dataset.dropna()
 
-# delete completely constant features
-del dataset['SES TEMPERATURE']
-del dataset['AMS-SES-HUMIDIFIER AIR IN']
-del dataset['FEG LVL SWITCH COND MAX']
-del dataset['FEG  TEMPERATURE PHM 2']
-del dataset['FEG HUMIDITY PHM 2']
-del dataset['EC Setpoint']
-del dataset['pH Setpoint']
-del dataset['EC Setpoint 2']
-del dataset['pH Setpoint 2']
+# delete completely constant features: standard deviation = 0
+#del dataset['SES TEMPERATURE']
+#del dataset['AMS-SES-HUMIDIFIER AIR IN']
+#del dataset['FEG LVL SWITCH COND MAX']
+#del dataset['FEG  TEMPERATURE PHM 2']
+#del dataset['FEG HUMIDITY PHM 2']
+#del dataset['EC Setpoint']
+#del dataset['pH Setpoint']
+#del dataset['EC Setpoint 2']
+#del dataset['pH Setpoint 2']
+# completely constant after 01.03.2018
+#del dataset['CPO HUMIDITY']
+#del dataset['SES TEMPERATURE 2']
+#del dataset['SES HUMIDITY 2']
+#del dataset['AMS-SES-FAN AIR IN']
+#del dataset['AMS-SES-VALVE AIR IN']
+#del dataset['AMS-SES-HEATER AIR IN']
+#del dataset['FEG TEMPERATURE PHM 3']
+#del dataset['FEG HUMIDITY PHM 3']
+#del dataset['FEG TEMPERATURE PHM 4']
+#del dataset['FEG HUMIDITY PHM 4']
+#del dataset['FLOW METER TANK 1']
+
+# more constant features: explained perfectly by LAST and REPEAT
+# around 1 sample that isnt constant -> sd =/= 0
+
+#del dataset['SES HUMIDITY TARGET']
+#del dataset['FEG HUMIDITY TARGET']
+#del dataset['AMS-FEG-FANS CIRC L1.L2']
+#del dataset['AMS-FEG-FANS CIRC L3.L4']
+#del dataset['AMS-FEG-FANS CIRC R1.R2']
+#del dataset['AMS-FEG-FANS CIRC R3.R4']
+#del dataset['AMS-FEG-FAN AIR LOOP 1']
+#del dataset['AMS-FEG-FAN AIR LOOP 2']
+#del dataset['AMS-FEG-UV LAMP AIR']
+#del dataset['NDS-REC PUMP TANK 1']
+#del dataset['NDS-REC PUMP TANK 2']
+#del dataset['NDS-PUMP FW ']
+#del dataset['NDS-BASE SOLENOID']
+#del dataset['NDS-BASE DOSING PUMP ']
+
+
 
 print(dataset.shape, end=' ', flush = True)
-print(' | order: GTMF AMS ILS NDS   (TCS dropped)')
+print(' | order: GTMF AMS ILS NDS   (TCS dropped)', end =' ')
+from_datetime = pd.to_datetime('')
+to_datetime = pd.to_datetime('')
+
+print(' | apply time cut')
+from_datetime = pd.to_datetime('01.03.2018',dayfirst=True)
+to_datetime = pd.to_datetime('13.08.2018',dayfirst=True)
+
+dataset = dataset.loc[from_datetime:to_datetime]
+
 print(dataset.head(10))
 print(dataset.tail(10))
 print('')
@@ -326,18 +367,91 @@ print(dataset.isnull().sum().sum(), end=' | ')
 print("%.2f" % ((dataset.isnull().sum().sum()/(dataset.shape[1]*dataset.shape[0]))*100), end=' ')
 print('%')
 
+###############################################################################
+# REMOVE CONSTANTS or CORRUPTED
+###############################################################################
+
+dataset_cache = dataset
+del dataset_cache['CPO HUMIDITY']
+del dataset_cache['SES TEMPERATURE 2']
+del dataset_cache['SES HUMIDITY 2']
+del dataset_cache['AMS-SES-FAN AIR IN']
+del dataset_cache['AMS-SES-VALVE AIR IN']
+del dataset_cache['AMS-SES-HUMIDIFIER AIR IN']
+del dataset_cache['AMS-SES-HEATER AIR IN']
+del dataset_cache['FEG LVL SWITCH COND MAX']
+del dataset_cache['FEG  TEMPERATURE PHM 2']
+del dataset_cache['FEG HUMIDITY PHM 2']
+del dataset_cache['FEG TEMPERATURE PHM 3']
+del dataset_cache['FEG HUMIDITY PHM 3']
+del dataset_cache['FEG TEMPERATURE PHM 4']
+del dataset_cache['FEG HUMIDITY PHM 4']
+del dataset_cache['FLOW METER TANK 1']
+del dataset_cache['EC Setpoint']
+del dataset_cache['pH Setpoint']
+del dataset_cache['EC Setpoint 2']
+del dataset_cache['pH Setpoint 2']
+del dataset_cache['SES TEMPERATURE']
+del dataset_cache['SES HUMIDITY TARGET']
+del dataset_cache['AMS-FEG-FANS CIRC L1.L2']
+del dataset_cache['AMS-FEG-FANS CIRC L3.L4']
+del dataset_cache['AMS-FEG-FANS CIRC R1.R2']
+del dataset_cache['AMS-FEG-FANS CIRC R3.R4']
+del dataset_cache['AMS-FEG-UV LAMP AIR']
+del dataset_cache['NDS-BASE SOLENOID']
+del dataset_cache['FEG AIR FLOW']
+del dataset_cache['NDS-BASE DOSING PUMP ']
+del dataset_cache['NDS-ACID SOLENOID']
+del dataset_cache['PDS TEMP CONTROL BOX']
+del dataset_cache['SUBFLOOR CPO 2']
+del dataset_cache['AMS-FEG-FAN AIR LOOP 1']
+del dataset_cache['AMS-FEG-FAN AIR LOOP 2']
+del dataset_cache['SES TEMP AIR IN 1']
+del dataset_cache['FEG HUMIDITY TARGET']
+del dataset_cache['NDS-PUMP FW ']
+del dataset_cache['FLOW METER TANK 2']
+del dataset_cache['SES TEMP AIR IN 2']
+del dataset_cache['NDS-REC PUMP TANK 1']
+del dataset_cache['NDS-REC PUMP TANK 2']
+
+###############################################################################
+# SPLIT DATASET
+###############################################################################
+
+print('')
+print('───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────')
+print('SPLITTING dataset into \'time_controlled\' and \'environment_controlled\'')
+
+ILS_time_controlled = ['L1-2L BLUE','L1-2R BLUE','L1-4L BLUE','L1-4R BLUE','R4-4R BLUE','R4-4L BLUE','L2-1L BLUE','L2-1R BLUE','L2-2L BLUE','L2-2R BLUE','L2-3L BLUE','L2-3R BLUE','L2-4L BLUE','L2-4R BLUE','L3-1L BLUE','L3-2L BLUE','L3-1R BLUE','L3-2R BLUE','L3-3L BLUE','L3-3R BLUE','L3-4L BLUE','L3-4R BLUE','L4-1L BLUE','L4-1R BLUE','L4-2L BLUE','L4-2R BLUE','L4-3L BLUE','L4-3R BLUE','L4-4L BLUE','L4-4R BLUE','R1-2R BLUE','R1-2L BLUE','R1-4R BLUE','R1-4L BLUE','R2-2R BLUE','R2-2L BLUE','R2-4R BLUE','R2-4L BLUE','R3-2/4R BLUE','R3-2/4L BLUE','R4-2R BLUE','R4-2L BLUE','L1-2L RED','L1-2R RED','L1-4L RED','L1-4R RED','R4-4R RED','R4-4L RED','L2-1L RED','L2-1R RED','L2-2L RED','L2-2R RED','L2-3L RED','L2-3R RED','L2-4L RED','L2-4R RED','L3-1L RED','L3-2L RED','L3-1R RED','L3-2R RED','L3-3L RED','L3-3R RED','L3-4L RED','L3-4R RED','L4-1L RED','L4-1R RED','L4-2L RED','L4-2R RED','L4-3L RED','L4-3R RED','L4-4L RED','L4-4R RED','R1-2R RED','R1-2L RED','R1-4R RED','R1-4L RED','R2-2R RED','R2-2L RED','R2-4R RED','R2-4L RED','R3-2/4R RED','R3-2/4L RED','R4-2R RED','R4-2L RED','L1-2L FAR RED','L1-2R FAR RED','L1-4L FAR RED']
+
+time_controlled_columns = ILS_time_controlled
+
+dataset_time_controlled = dataset_cache[time_controlled_columns]
+dataset_environment_controlled = dataset_cache.drop(time_controlled_columns, axis=1)
 
 ###############################################################################
 # WRITE DATASET
 ###############################################################################
 print('')
 print('───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────')
-print('WRITING dataset.csv', end=' ', flush = True)
-dataset.to_csv('dataset.csv', sep=';', encoding='utf-8')
+print('WRITING dataset_full.csv', end=' ', flush = True)
+dataset.to_csv('datasets\dataset_full.csv', sep=';', encoding='utf-8')
+print('                           done.')
+print('WRITING dataset_time_controlled.csv', end=' ', flush = True)
+dataset_time_controlled.to_csv('datasets\dataset_time_controlled.csv', sep=';', encoding='utf-8')
+print('                done.')
+print('WRITING dataset_environment_controlled.csv', end=' ', flush = True)
+dataset_environment_controlled.to_csv('datasets\dataset_environment_controlled.csv', sep=';', encoding='utf-8')
 print('         done.')
+
+
+###############################################################################
+# VERIFY
+###############################################################################
+print('')
 print('READING dataset.csv', end=' ', flush = True)
 
-dataset_readin = pd.read_csv('dataset.csv',index_col="Date_Time", sep=';', low_memory=False)
+dataset_readin = pd.read_csv('datasets\dataset_full.csv',index_col="Date_Time", sep=';', low_memory=False)
 dataset_readin.index = pd.to_datetime(dataset_readin.index)
 dataset.index.name = 'Date_Time'
 if dataset_readin.equals(dataset):
