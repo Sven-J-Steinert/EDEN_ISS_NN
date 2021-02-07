@@ -13,31 +13,41 @@ import tensorflow as tf
 physical_devices = tf.config.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
-mpl.rcParams['figure.figsize'] = (8, 6)
+mpl.rcParams['figure.figsize'] = (6, 6)
 mpl.rcParams['axes.grid'] = False
 
 
 from sklearn.preprocessing import RobustScaler
 
+
+
+# SETTINGS
+
+IN_STEPS = 288
+OUT_STEPS = IN_STEPS  # 288
+
+MAX_EPOCHS = 100
+
+
+
+
 print('Tensorflow Version ' + tf.__version__)
-
-
 ###############################################################################
 # SELECTING MODEL TARGET
 ###############################################################################
 print('')
 print('───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────')
 print('Select the model target:')
-print('1) System Variables: Time Controlled')
-print('2) System Variables: Environment Controlled')
-print('3) Plant')
-print('4) identify time controlled variables')
+print('0) Identify Constants')
+print('1) Time Controlled')
+print('2) Environment Controlled')
+print('3) General')
 
 num_1 = int(input("Select option: "))
-options = {1 : 'System Variables/Time Controlled',
-           2 : 'System Variables/Environment Controlled',
-           3 : 'Plant',
-           4 : 'identify'
+options = {0 : 'Identify Constants',
+           1 : 'Time Controlled',
+           2 : 'Environment Controlled',
+           3 : 'General'
 }
 model_target = options[num_1]
 
@@ -51,13 +61,11 @@ print('Select dataset to load:')
 print('1) dataset_full.csv')
 print('2) dataset_time_controlled.csv')
 print('3) dataset_environment_controlled.csv')
-print('4) pretest.csv')
 
 num = int(input("Select option: "))
 options = {1 : 'dataset_full.csv',
            2 : 'dataset_time_controlled.csv',
            3 : 'dataset_environment_controlled.csv',
-           4 : 'pretest.csv',
 }
 URL = 'datasets/' + options[num]
 
@@ -67,36 +75,63 @@ df = pd.read_csv(URL, parse_dates=['Date_Time'], index_col="Date_Time",
                           sep=';', skipinitialspace=True)
 print(df.shape)
 
-if options[num] == 'dataset_full.csv':
+if model_target == 'Environment Controlled':
+    all_features = df.columns.tolist()
+    print('')
+    print('FEATURES total:' , end='                   ')
+    print(len(all_features))
+
     time_controlled_features = ['L1-2L BLUE','L1-2R BLUE','L1-4L BLUE','L1-4R BLUE','R4-4R BLUE','R4-4L BLUE','L2-1L BLUE','L2-1R BLUE','L2-2L BLUE','L2-2R BLUE','L2-3L BLUE','L2-3R BLUE','L2-4L BLUE','L2-4R BLUE','L3-1L BLUE','L3-2L BLUE','L3-1R BLUE','L3-2R BLUE','L3-3L BLUE','L3-3R BLUE','L3-4L BLUE','L3-4R BLUE','L4-1L BLUE','L4-1R BLUE','L4-2L BLUE','L4-2R BLUE','L4-3L BLUE','L4-3R BLUE','L4-4L BLUE','L4-4R BLUE','R1-2R BLUE','R1-2L BLUE','R1-4R BLUE','R1-4L BLUE','R2-2R BLUE','R2-2L BLUE','R2-4R BLUE','R2-4L BLUE','R3-2/4R BLUE','R3-2/4L BLUE','R4-2R BLUE','R4-2L BLUE','L1-2L RED','L1-2R RED','L1-4L RED','L1-4R RED','R4-4R RED','R4-4L RED','L2-1L RED','L2-1R RED','L2-2L RED','L2-2R RED','L2-3L RED','L2-3R RED','L2-4L RED','L2-4R RED','L3-1L RED','L3-2L RED','L3-1R RED','L3-2R RED','L3-3L RED','L3-3R RED','L3-4L RED','L3-4R RED','L4-1L RED','L4-1R RED','L4-2L RED','L4-2R RED','L4-3L RED','L4-3R RED','L4-4L RED','L4-4R RED','R1-2R RED','R1-2L RED','R1-4R RED','R1-4L RED','R2-2R RED','R2-2L RED','R2-4R RED','R2-4L RED','R3-2/4R RED','R3-2/4L RED','R4-2R RED','R4-2L RED','L1-2L FAR RED','L1-2R FAR RED','L1-4L FAR RED']
+    print('FEATURES time controlled:' , end='          ')
+    print(len(time_controlled_features))
 
-    test_features = ['FEG AIR FLOW','NDS-BASE DOSING PUMP ','NDS-ACID SOLENOID','PDS TEMP CONTROL BOX','SUBFLOOR CPO 2','AMS-FEG-FAN AIR LOOP 1','AMS-FEG-FAN AIR LOOP 2','SES TEMP AIR IN 1','FEG HUMIDITY TARGET','NDS-ACID DOSING PUMP ','NDS-PUMP FW ','FLOW METER TANK 2','SES TEMP AIR IN 2','NDS-SOLENOID FW TANK 1','NDS-REC PUMP TANK 1','NDS-REC PUMP TANK 2','NDS-SOLENOID FW TANK 2','NDS-A DOSING PUMP','NDS-B DOSING PUMP','SES DOOR STATUS']
-    df = df[test_features]
+    environment_controlled_features = list(set(all_features) - set(time_controlled_features))
+    OUT_FEATURES = environment_controlled_features
+    print('FEATURES environment controlled:' , end='   ')
+    print(len(environment_controlled_features), end=' ')
+    if len(all_features) == len(time_controlled_features)+len(environment_controlled_features):
+        print('match')
+    else:
+        print('mismatch')
+    print('')
 
-df.astype('float64')
-print(df.tail())
-print('')
-print('missing variables:', end=' ')
-print(df.isna().sum().sum())
-
-# short to one feature
-if options[num] == 'dataset_time_controlled.csv':
+if model_target == 'Time Controlled':
+    OUT_FEATURES = None
     df = df.iloc[:, 0:1]
 
+df.astype('float64')
 
 
 ###############################################################################
 # VISUALIZE DATA
 ###############################################################################
 
-# plot first 6 columns
-#plot_features = df.iloc[:, 0:6]
-# plot all
-plot_features = df
-print(plot_features)
-plot_features.index = df.index
-_ = plot_features.plot(subplots=True)
-plt.show()
+
+if model_target == 'Identify Constants':
+    plot_names = ['FEG AIR FLOW','NDS-BASE DOSING PUMP ','NDS-ACID SOLENOID','PDS TEMP CONTROL BOX','SUBFLOOR CPO 2','AMS-FEG-FAN AIR LOOP 1','AMS-FEG-FAN AIR LOOP 2','SES TEMP AIR IN 1','FEG HUMIDITY TARGET','NDS-ACID DOSING PUMP ','NDS-PUMP FW ','FLOW METER TANK 2','SES TEMP AIR IN 2','NDS-SOLENOID FW TANK 1','NDS-REC PUMP TANK 1','NDS-REC PUMP TANK 2','NDS-SOLENOID FW TANK 2','NDS-A DOSING PUMP','NDS-B DOSING PUMP','SES DOOR STATUS']
+    plot_features = df[plot_names]
+#else:
+#    plot_features = df.iloc[:, 0:1]  # first feature
+#    plot_features = df[['L1-2L BLUE']]
+    #plot_features.index = df.index
+
+
+if model_target == 'Identify Constants':
+    #_new = plot_features.plot(subplots=True, figsize=(10,14))
+    _ = plot_features.plot(subplots=True, figsize=(10,1))
+    plt.tight_layout()
+    plt.subplots_adjust(hspace = 0.1 )
+    plt.xticks(rotation=0)
+    plt.savefig('./figures/' + model_target + '/feature.svg')
+
+    exit(0)
+
+if model_target == 'General':
+    _ = plot_features.plot(figsize=(15,1.2))
+    plt.xticks(rotation=0)
+    plt.savefig('./figures/' + model_target + '/feature.svg')
+
+    exit(0)
 
 
 ###############################################################################
@@ -110,20 +145,12 @@ train_df = df[0:int(n*0.7)]
 val_df = df[int(n*0.7):int(n*0.9)]
 test_df = df[int(n*0.9):]
 
-# usually input features = output features
-num_input_features = df.shape[1]
-num_output_features = df.shape[1]
 
-#if options[num] == 'dataset_full.csv':
-#    num_input_features = df.shape[1]
-#    num_output_features = df.shape[1] - len(time_controlled_features)
+if model_target == 'Time controlled':
+    num_output_features = df.shape[1]
 
-print()
-print('FEATURES')
-print('input: ', end=' ')
-print(num_input_features)
-print('output: ', end=' ')
-print(num_output_features)
+if model_target == 'Environment controlled':
+    num_output_features = len(environment_controlled_features)
 
 
 ###############################################################################
@@ -189,7 +216,6 @@ class WindowGenerator():
         f'Label column name(s): {self.label_columns}'])
 
 
-
 ###############################################################################
 # SPLIT WINDOW
 ###############################################################################
@@ -211,17 +237,20 @@ def split_window(self, features):
 
 WindowGenerator.split_window = split_window
 
+
+
 ###############################################################################
 #  TRAIN | VAL | TEST   PLOT
 ###############################################################################
+if model_target == 'Time Controlled':
+    plot_col = 'L1-2L BLUE'
+if model_target == 'Environment Controlled':
+    plot_col = 'NDS-B DOSING PUMP'
 
-print('visualizing first feature: ', end=' ')
-print(df.columns)
-print('')
-
-def plot(self, model=None, plot_col=df.columns, max_subplots=3):
+# df.columns[0]   # first feature
+def plot(self, model=None, plot_col=plot_col, max_subplots=3):
   inputs, labels = self.example
-  plt.figure(figsize=(12, 8))
+  plt.figure(figsize=(14, 8))
   plot_col_index = self.column_indices[plot_col]
   max_n = min(max_subplots, len(inputs))
   for n in range(max_n):
@@ -250,6 +279,7 @@ def plot(self, model=None, plot_col=df.columns, max_subplots=3):
       plt.legend()
 
   plt.xlabel('Time Steps')
+  plt.xticks(rotation=0)
 
 WindowGenerator.plot = plot
 
@@ -266,7 +296,7 @@ def make_dataset(self, data):
       sequence_length=self.total_window_size,
       sequence_stride=1,
       shuffle=True,
-      batch_size=32)
+      batch_size=32,)
 
   ds = ds.map(self.split_window)
 
@@ -308,18 +338,35 @@ WindowGenerator.example = example
 
 
 
-
 ###############################################################################
 # MULTI STEP MODELS
 ###############################################################################
 
 
-MAX_EPOCHS = 100
+
+multi_window = WindowGenerator(input_width=IN_STEPS,
+                               label_width=OUT_STEPS,
+                               shift=OUT_STEPS,
+                               label_columns=OUT_FEATURES)
+
+multi_window_baseline = WindowGenerator(input_width=IN_STEPS,
+                               label_width=OUT_STEPS,
+                               shift=OUT_STEPS)
+
+#print(multi_window.__dict__)
+
+
+###############################################################################
+# COMPILE AND FIT
+###############################################################################
 
 def compile_and_fit(model, window, patience=2):
   early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
                                                     patience=patience,
-                                                    mode='min')
+                                                    mode='min', restore_best_weights=True)
+
+  reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2,
+                              patience=5, min_lr=0.001)
 
   model.compile(loss=tf.losses.MeanSquaredError(),
                 optimizer=tf.optimizers.Adam(),
@@ -330,17 +377,7 @@ def compile_and_fit(model, window, patience=2):
                       callbacks=[early_stopping])
   return history
 
-
-
-OUT_STEPS = 288
-multi_window = WindowGenerator(input_width=288,
-                               label_width=OUT_STEPS,
-                               shift=OUT_STEPS)
-
-#multi_window.plot()
-#
-#plt.show()
-#plt.pause(0.001)
+###############################################################################
 
 
 print('┌────────────────┐')
@@ -357,10 +394,13 @@ last_baseline.compile(loss=tf.losses.MeanSquaredError(),
 multi_val_performance = {}
 multi_performance = {}
 
-multi_val_performance['Last'] = last_baseline.evaluate(multi_window.val)
-multi_performance['Last'] = last_baseline.evaluate(multi_window.test, verbose=0)
-#multi_window.plot(last_baseline)
-#plt.show()
+if model_target == 'Time Controlled':
+    multi_val_performance['Last'] = last_baseline.evaluate(multi_window.val)
+    multi_performance['Last'] = last_baseline.evaluate(multi_window.test, verbose=0)
+
+if model_target == 'Environment Controlled':
+    multi_val_performance['Last'] = last_baseline.evaluate(multi_window_baseline.val)
+    multi_performance['Last'] = last_baseline.evaluate(multi_window_baseline.test, verbose=0)
 
 
 class RepeatBaseline(tf.keras.Model):
@@ -382,8 +422,8 @@ def compute_repeat():
     multi_performance['Repeat'] = repeat_baseline.evaluate(multi_window.test, verbose=0)
     multi_window.plot(repeat_baseline)
 
-    plt.show()
-    plt.pause(0.001)
+    plt.savefig('./figures/' + model_target + '/REPEAT.svg')
+
 
 
 def compute_linear():
@@ -398,7 +438,7 @@ def compute_linear():
         # Shape [batch, time, features] => [batch, 1, features]
         tf.keras.layers.Lambda(lambda x: x[:, -1:, :]),
         # Shape => [batch, 1, out_steps*features]
-        tf.keras.layers.Dense(OUT_STEPS*num_input_features,
+        tf.keras.layers.Dense(OUT_STEPS*num_output_features,
                               kernel_initializer=tf.initializers.zeros),
         # Shape => [batch, out_steps, features]
         tf.keras.layers.Reshape([OUT_STEPS, num_output_features])
@@ -411,8 +451,8 @@ def compute_linear():
     multi_performance['Linear'] = multi_linear_model.evaluate(multi_window.test, verbose=0)
     multi_window.plot(multi_linear_model)
 
-    plt.show()
-    plt.pause(0.001)
+    plt.savefig('./figures/' + model_target + '/LINEAR.svg')
+
 
 def compute_dense():
     print('┌────────────────┐')
@@ -428,7 +468,7 @@ def compute_dense():
         # Shape => [batch, 1, dense_units]
         tf.keras.layers.Dense(512, activation='relu'),
         # Shape => [batch, out_steps*features]
-        tf.keras.layers.Dense(OUT_STEPS*num_input_features,
+        tf.keras.layers.Dense(OUT_STEPS*num_output_features,
                               kernel_initializer=tf.initializers.zeros),
         # Shape => [batch, out_steps, features]
         tf.keras.layers.Reshape([OUT_STEPS, num_output_features])
@@ -441,8 +481,8 @@ def compute_dense():
     multi_performance['Dense'] = multi_dense_model.evaluate(multi_window.test, verbose=0)
     multi_window.plot(multi_dense_model)
 
-    plt.show()
-    plt.pause(0.001)
+    plt.savefig('./figures/' + model_target + '/DENSE.svg')
+
 
 def compute_conv():
     print('┌────────────────┐')
@@ -458,7 +498,7 @@ def compute_conv():
         # Shape => [batch, 1, conv_units]
         tf.keras.layers.Conv1D(256, activation='relu', kernel_size=(CONV_WIDTH)),
         # Shape => [batch, 1,  out_steps*features]
-        tf.keras.layers.Dense(OUT_STEPS*num_input_features,
+        tf.keras.layers.Dense(OUT_STEPS*num_output_features,
                               kernel_initializer=tf.initializers.zeros),
         # Shape => [batch, out_steps, features]
         tf.keras.layers.Reshape([OUT_STEPS, num_output_features])
@@ -472,8 +512,8 @@ def compute_conv():
     multi_performance['Conv'] = multi_conv_model.evaluate(multi_window.test, verbose=0)
     multi_window.plot(multi_conv_model)
 
-    plt.show()
-    plt.pause(0.001)
+    plt.savefig('./figures/' + model_target + '/CONV.svg')
+
 
 def compute_lstm():
     print('┌────────────────┐')
@@ -487,7 +527,7 @@ def compute_lstm():
         # Adding more `lstm_units` just overfits more quickly.
         tf.keras.layers.LSTM(32, return_sequences=False),
         # Shape => [batch, out_steps*features]
-        tf.keras.layers.Dense(OUT_STEPS*num_input_features,
+        tf.keras.layers.Dense(OUT_STEPS*num_output_features,
                               kernel_initializer=tf.initializers.zeros),
         # Shape => [batch, out_steps, features]
         tf.keras.layers.Reshape([OUT_STEPS, num_output_features])
@@ -501,8 +541,8 @@ def compute_lstm():
     multi_performance['LSTM'] = multi_lstm_model.evaluate(multi_window.test, verbose=0)
     multi_window.plot(multi_lstm_model)
 
-    plt.show()
-    plt.pause(0.001)
+    plt.savefig('./figures/' + model_target + '/LSTM.svg')
+
 
 
 # for Auto LSTM
@@ -514,7 +554,7 @@ class FeedBack(tf.keras.Model):
     self.lstm_cell = tf.keras.layers.LSTMCell(units)
     # Also wrap the LSTMCell in an RNN to simplify the `warmup` method.
     self.lstm_rnn = tf.keras.layers.RNN(self.lstm_cell, return_state=True)
-    self.dense = tf.keras.layers.Dense(num_input_features)
+    self.dense = tf.keras.layers.Dense(num_output_features)
 
 # for Auto LSTM
 def warmup(self, inputs):
@@ -579,13 +619,14 @@ def compute_auto_lstm():
     multi_performance['AR LSTM'] = feedback_model.evaluate(multi_window.test, verbose=0)
     multi_window.plot(feedback_model)
 
-    plt.show()
-    plt.pause(0.001)
+    plt.savefig('./figures/' + model_target + '/AR_LSTM.svg')
+
 
 
 
 def compute_all():
-    compute_repeat()
+    if model_target == 'Time Controlled':
+        compute_repeat()
     compute_linear()
     compute_dense()
     compute_conv()
@@ -595,7 +636,8 @@ def compute_all():
 
 
 print('Select Model to compute:')
-print('0) Repeat')
+if model_target == 'Time Controlled':
+    print('0) Repeat')
 print('1) Linear')
 print('2) Dense')
 print('3) Convolutional')
@@ -612,12 +654,15 @@ options = {0 : compute_repeat,
            6 : compute_all,
 
 }
+
+
 options[num]()
 
 ###############################################################################
 # PERFORMANCE
 ###############################################################################
 
+plt.show()
 x = np.arange(len(multi_performance))
 width = 0.3
 
@@ -634,7 +679,8 @@ plt.xticks(ticks=x, labels=multi_performance.keys(),
            rotation=45)
 plt.ylabel(f'MAE (average over all times and outputs)')
 _ = plt.legend()
-plt.show()
+plt.savefig('./figures/' + model_target + '/performance.svg')
+
 
 print('')
 print('┌──── summary ─────┐')
