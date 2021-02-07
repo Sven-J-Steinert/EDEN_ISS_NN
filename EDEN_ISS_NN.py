@@ -31,23 +31,34 @@ MAX_EPOCHS = 100
 
 
 
-print('Tensorflow Version ' + tf.__version__)
+
+print('')
+print('┌────────────────────────────────────────────────────────────────────────────────────────┐')
+print('│                                                                                        │')
+print('│    ███████ ██████  ███████ ███    ██     ██ ███████ ███████     ███    ██ ███    ██    │')
+print('│    ██      ██   ██ ██      ████   ██     ██ ██      ██          ████   ██ ████   ██    │')
+print('│    █████   ██   ██ █████   ██ ██  ██     ██ ███████ ███████     ██ ██  ██ ██ ██  ██    │')
+print('│    ██      ██   ██ ██      ██  ██ ██     ██      ██      ██     ██  ██ ██ ██  ██ ██    │')
+print('│    ███████ ██████  ███████ ██   ████     ██ ███████ ███████     ██   ████ ██   ████    │')
+print('│                                                                                        │')
+print('│ Tensorflow Version ' + tf.__version__ + '       IN_STEPS = '+str(IN_STEPS)+'    OUT_STEPS = '+str(OUT_STEPS)+'    MAX_EPOCHS = '+str(MAX_EPOCHS)+'   │')
+print('└────────────────────────────────────────────────────────────────────────────────────────┘')
+
 ###############################################################################
 # SELECTING MODEL TARGET
 ###############################################################################
 print('')
-print('───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────')
 print('Select the model target:')
-print('0) Identify Constants')
-print('1) Time Controlled')
-print('2) Environment Controlled')
-print('3) General')
+print('┌───────────────────────────┐')
+print('│ 0) Identify Constants     │')
+print('│ 1) Time Controlled        │')
+print('│ 2) Environment Controlled │')
+print('└───────────────────────────┘')
 
 num_1 = int(input("Select option: "))
 options = {0 : 'Identify Constants',
            1 : 'Time Controlled',
            2 : 'Environment Controlled',
-           3 : 'General'
 }
 model_target = options[num_1]
 
@@ -55,25 +66,44 @@ model_target = options[num_1]
 ###############################################################################
 # LOADING DATA
 ###############################################################################
+if model_target == 'Identify Constants':
+    file = 'dataset_full_with_constants.csv'
+
+if model_target == 'Time Controlled':
+    file = 'dataset_time_controlled.csv'
+
+if model_target == 'Environment Controlled':
+    print('')
+    print('Select model type:')
+    print('┌───────────────────────────┐')
+    print('│ 0) explain with EC only   │')
+    print('│ 1) explain with TC and EC │')
+    print('└───────────────────────────┘')
+
+    num = int(input("Select option: "))
+    options = { 0 : 'EC',
+                1 : 'TC+EC',}
+    model_type = options[num]
+    if model_type == 'EC':
+        file = 'dataset_environment_controlled.csv'
+    if model_type == 'TC+EC':
+        file = 'dataset_full.csv'
+
+URL = 'datasets/' + file
 print('')
-print('───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────')
-print('Select dataset to load:')
-print('1) dataset_full.csv')
-print('2) dataset_time_controlled.csv')
-print('3) dataset_environment_controlled.csv')
-
-num = int(input("Select option: "))
-options = {1 : 'dataset_full.csv',
-           2 : 'dataset_time_controlled.csv',
-           3 : 'dataset_environment_controlled.csv',
-}
-URL = 'datasets/' + options[num]
-
 print('READING ' + URL, end=' ')
 df = pd.read_csv(URL, parse_dates=['Date_Time'], index_col="Date_Time",
                           na_values='NaN', comment='\t',
                           sep=';', skipinitialspace=True)
 print(df.shape)
+
+if model_target == 'Time Controlled':
+    OUT_FEATURES = None
+    df = df.iloc[:, 0:1]
+    print('')
+    print('SELECTED first feature', end=' ')
+    print(df.columns.values.tolist()[0], end=' ')
+    print(df.shape)
 
 if model_target == 'Environment Controlled':
     all_features = df.columns.tolist()
@@ -82,57 +112,35 @@ if model_target == 'Environment Controlled':
     print(len(all_features))
 
     time_controlled_features = ['L1-2L BLUE','L1-2R BLUE','L1-4L BLUE','L1-4R BLUE','R4-4R BLUE','R4-4L BLUE','L2-1L BLUE','L2-1R BLUE','L2-2L BLUE','L2-2R BLUE','L2-3L BLUE','L2-3R BLUE','L2-4L BLUE','L2-4R BLUE','L3-1L BLUE','L3-2L BLUE','L3-1R BLUE','L3-2R BLUE','L3-3L BLUE','L3-3R BLUE','L3-4L BLUE','L3-4R BLUE','L4-1L BLUE','L4-1R BLUE','L4-2L BLUE','L4-2R BLUE','L4-3L BLUE','L4-3R BLUE','L4-4L BLUE','L4-4R BLUE','R1-2R BLUE','R1-2L BLUE','R1-4R BLUE','R1-4L BLUE','R2-2R BLUE','R2-2L BLUE','R2-4R BLUE','R2-4L BLUE','R3-2/4R BLUE','R3-2/4L BLUE','R4-2R BLUE','R4-2L BLUE','L1-2L RED','L1-2R RED','L1-4L RED','L1-4R RED','R4-4R RED','R4-4L RED','L2-1L RED','L2-1R RED','L2-2L RED','L2-2R RED','L2-3L RED','L2-3R RED','L2-4L RED','L2-4R RED','L3-1L RED','L3-2L RED','L3-1R RED','L3-2R RED','L3-3L RED','L3-3R RED','L3-4L RED','L3-4R RED','L4-1L RED','L4-1R RED','L4-2L RED','L4-2R RED','L4-3L RED','L4-3R RED','L4-4L RED','L4-4R RED','R1-2R RED','R1-2L RED','R1-4R RED','R1-4L RED','R2-2R RED','R2-2L RED','R2-4R RED','R2-4L RED','R3-2/4R RED','R3-2/4L RED','R4-2R RED','R4-2L RED','L1-2L FAR RED','L1-2R FAR RED','L1-4L FAR RED']
-    print('FEATURES time controlled:' , end='          ')
+    print('FEATURES Time Controlled:' , end='          ')
     print(len(time_controlled_features))
 
     environment_controlled_features = list(set(all_features) - set(time_controlled_features))
     OUT_FEATURES = environment_controlled_features
-    print('FEATURES environment controlled:' , end='   ')
+    print('FEATURES Environment Controlled:' , end='   ')
     print(len(environment_controlled_features), end=' ')
     if len(all_features) == len(time_controlled_features)+len(environment_controlled_features):
         print('match')
     else:
         print('mismatch')
-    print('')
-
-if model_target == 'Time Controlled':
-    OUT_FEATURES = None
-    df = df.iloc[:, 0:1]
-
-df.astype('float64')
 
 
 ###############################################################################
 # VISUALIZE DATA
 ###############################################################################
 
-
 if model_target == 'Identify Constants':
     plot_names = ['FEG AIR FLOW','NDS-BASE DOSING PUMP ','NDS-ACID SOLENOID','PDS TEMP CONTROL BOX','SUBFLOOR CPO 2','AMS-FEG-FAN AIR LOOP 1','AMS-FEG-FAN AIR LOOP 2','SES TEMP AIR IN 1','FEG HUMIDITY TARGET','NDS-ACID DOSING PUMP ','NDS-PUMP FW ','FLOW METER TANK 2','SES TEMP AIR IN 2','NDS-SOLENOID FW TANK 1','NDS-REC PUMP TANK 1','NDS-REC PUMP TANK 2','NDS-SOLENOID FW TANK 2','NDS-A DOSING PUMP','NDS-B DOSING PUMP','SES DOOR STATUS']
     plot_features = df[plot_names]
-#else:
-#    plot_features = df.iloc[:, 0:1]  # first feature
-#    plot_features = df[['L1-2L BLUE']]
-    #plot_features.index = df.index
-
-
-if model_target == 'Identify Constants':
-    #_new = plot_features.plot(subplots=True, figsize=(10,14))
-    _ = plot_features.plot(subplots=True, figsize=(10,1))
+    _ = plot_features.plot(subplots=True, figsize=(10,14))
+    #_ = plot_features.plot(subplots=True, figsize=(10,1))
     plt.tight_layout()
     plt.subplots_adjust(hspace = 0.1 )
     plt.xticks(rotation=0)
     plt.savefig('./figures/' + model_target + '/feature.svg')
-
+    plt.show()
+    print('end.')
     exit(0)
-
-if model_target == 'General':
-    _ = plot_features.plot(figsize=(15,1.2))
-    plt.xticks(rotation=0)
-    plt.savefig('./figures/' + model_target + '/feature.svg')
-
-    exit(0)
-
 
 ###############################################################################
 # DATASET SEPERATION
@@ -146,10 +154,10 @@ val_df = df[int(n*0.7):int(n*0.9)]
 test_df = df[int(n*0.9):]
 
 
-if model_target == 'Time controlled':
+if model_target == 'Time Controlled':
     num_output_features = df.shape[1]
 
-if model_target == 'Environment controlled':
+if model_target == 'Environment Controlled':
     num_output_features = len(environment_controlled_features)
 
 
@@ -353,8 +361,25 @@ multi_window_baseline = WindowGenerator(input_width=IN_STEPS,
                                label_width=OUT_STEPS,
                                shift=OUT_STEPS)
 
-#print(multi_window.__dict__)
 
+###############################################################################
+# CONTROL SHAPE WITH EXAMPLE
+###############################################################################
+
+# Stack three slices, the length of the total window:
+example_window = tf.stack([np.array(train_df[:multi_window.total_window_size]),
+                           np.array(train_df[1000:1000+multi_window.total_window_size]),
+                           np.array(train_df[2000:2000+multi_window.total_window_size])])
+
+
+multi_window_inputs, multi_window_labels = multi_window.split_window(example_window)
+print('')
+print('All shapes are: (batch, time, features)')
+print('──────────────────────────────')
+print(f'  Window shape: {example_window.shape}')
+print(f'  Inputs shape: {multi_window_inputs.shape}')
+print(f'  labels shape: {multi_window_labels.shape}')
+print('──────────────────────────────')
 
 ###############################################################################
 # COMPILE AND FIT
@@ -631,19 +656,24 @@ def compute_all():
     compute_dense()
     compute_conv()
     compute_lstm()
-    #compute_auto_lstm()
+    if model_target == 'Time Controlled':
+        compute_auto_lstm()
 
 
-
+print('')
 print('Select Model to compute:')
+print('┌──────────────────┐')
 if model_target == 'Time Controlled':
-    print('0) Repeat')
-print('1) Linear')
-print('2) Dense')
-print('3) Convolutional')
-print('4) LSTM')
-print('5) Auto LSTM')
-print('6) all')
+    print('│ 0) Repeat        │')
+print('│ 1) Linear        │')
+print('│ 2) Dense         │')
+print('│ 3) Convolutional │')
+print('│ 4) LSTM          │')
+if model_target == 'Time Controlled':
+    print('│ 5) Auto LSTM     │')
+print('│ 6) all           │')
+print('└──────────────────┘')
+
 num = int(input("Select option: "))
 options = {0 : compute_repeat,
            1 : compute_linear,
@@ -683,13 +713,13 @@ plt.savefig('./figures/' + model_target + '/performance.svg')
 
 
 print('')
-print('┌──── summary ─────┐')
+print('┌──── Test MAE ────┐')
 for name, value in multi_performance.items():
   print('│ ' + f'{name:8s}: {value[1]:0.4f}' + ' │')
 print('└──────────────────┘')
 
 with io.open('./models/' + model_target + '/summary.txt', "a", encoding="utf-8") as f:
-    f.write("┌──── summary ─────┐\n")
+    f.write("┌──── Test MAE ────┐\n")
     for name, value in multi_performance.items():
       f.write('│ ' + f'{name:8s}: {value[1]:0.4f}' + ' │\n')
     f.write('└──────────────────┘\n')
@@ -700,7 +730,7 @@ with io.open('./models/' + model_target + '/summary.txt', "a", encoding="utf-8")
 # SAVING MODELS
 ###############################################################################
 print('')
-print('saving at ' + './models/' + model_target)
+print('SAVING at ' + './models/' + model_target)
 
 #multi_lstm_model.save('./models/' + model_target + '/REPEAT.h5', save_format="tf")
 
@@ -733,5 +763,5 @@ except: print('', end='')
 #res50_model = load_model('my_model.h5')
 #res50_model.summary()
 #res50_model.get_weights()
+plt.show()
 print('end.')
-end = input()
