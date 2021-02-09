@@ -8,8 +8,8 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
 import tensorflow as tf
+
 physical_devices = tf.config.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
@@ -20,18 +20,17 @@ mpl.rcParams['axes.grid'] = False
 from sklearn.preprocessing import RobustScaler
 
 
-
 # SETTINGS
 
 IN_STEPS = 288
 OUT_STEPS = IN_STEPS  # 288
 
-MAX_EPOCHS = 10
+MAX_EPOCHS = 1
 
 
 
-
-
+print('')
+print('Tensorflow Version ' + tf.__version__ )
 print('')
 print('┌────────────────────────────────────────────────────────────────────────────────────────┐')
 print('│                                                                                        │')
@@ -41,9 +40,8 @@ print('│    █████   ██   ██ █████   ██ ██ 
 print('│    ██      ██   ██ ██      ██  ██ ██     ██      ██      ██     ██  ██ ██ ██  ██ ██    │')
 print('│    ███████ ██████  ███████ ██   ████     ██ ███████ ███████     ██   ████ ██   ████    │')
 print('│                                                                                        │')
-print('│ Tensorflow Version ' + tf.__version__ + '       IN_STEPS = '+str(IN_STEPS)+'    OUT_STEPS = '+str(OUT_STEPS)+'    MAX_EPOCHS = '+str(MAX_EPOCHS)+'   │')
+print('│    build on           CUDA 11.0    cuDNN 8.1.0    Tensorflow 2.4.1                     │')
 print('└────────────────────────────────────────────────────────────────────────────────────────┘')
-
 print('')
 print('Select purpose:')
 print('┌───────────────────────────┐')
@@ -129,16 +127,18 @@ if model_target == 'Environment Controlled':
     all_features = df.columns.tolist()
     print('')
     print('FEATURES total:' , end='                   ')
-    print(len(all_features))
+    print("{:4.0f}".format(len(all_features)))
+    time_controlled_features = []
+    if model_type == '/TC and EC':
+        time_controlled_features = ['L1-2L BLUE','L1-2R BLUE','L1-4L BLUE','L1-4R BLUE','R4-4R BLUE','R4-4L BLUE','L2-1L BLUE','L2-1R BLUE','L2-2L BLUE','L2-2R BLUE','L2-3L BLUE','L2-3R BLUE','L2-4L BLUE','L2-4R BLUE','L3-1L BLUE','L3-2L BLUE','L3-1R BLUE','L3-2R BLUE','L3-3L BLUE','L3-3R BLUE','L3-4L BLUE','L3-4R BLUE','L4-1L BLUE','L4-1R BLUE','L4-2L BLUE','L4-2R BLUE','L4-3L BLUE','L4-3R BLUE','L4-4L BLUE','L4-4R BLUE','R1-2R BLUE','R1-2L BLUE','R1-4R BLUE','R1-4L BLUE','R2-2R BLUE','R2-2L BLUE','R2-4R BLUE','R2-4L BLUE','R3-2/4R BLUE','R3-2/4L BLUE','R4-2R BLUE','R4-2L BLUE','L1-2L RED','L1-2R RED','L1-4L RED','L1-4R RED','R4-4R RED','R4-4L RED','L2-1L RED','L2-1R RED','L2-2L RED','L2-2R RED','L2-3L RED','L2-3R RED','L2-4L RED','L2-4R RED','L3-1L RED','L3-2L RED','L3-1R RED','L3-2R RED','L3-3L RED','L3-3R RED','L3-4L RED','L3-4R RED','L4-1L RED','L4-1R RED','L4-2L RED','L4-2R RED','L4-3L RED','L4-3R RED','L4-4L RED','L4-4R RED','R1-2R RED','R1-2L RED','R1-4R RED','R1-4L RED','R2-2R RED','R2-2L RED','R2-4R RED','R2-4L RED','R3-2/4R RED','R3-2/4L RED','R4-2R RED','R4-2L RED','L1-2L FAR RED','L1-2R FAR RED','L1-4L FAR RED']
 
-    time_controlled_features = ['L1-2L BLUE','L1-2R BLUE','L1-4L BLUE','L1-4R BLUE','R4-4R BLUE','R4-4L BLUE','L2-1L BLUE','L2-1R BLUE','L2-2L BLUE','L2-2R BLUE','L2-3L BLUE','L2-3R BLUE','L2-4L BLUE','L2-4R BLUE','L3-1L BLUE','L3-2L BLUE','L3-1R BLUE','L3-2R BLUE','L3-3L BLUE','L3-3R BLUE','L3-4L BLUE','L3-4R BLUE','L4-1L BLUE','L4-1R BLUE','L4-2L BLUE','L4-2R BLUE','L4-3L BLUE','L4-3R BLUE','L4-4L BLUE','L4-4R BLUE','R1-2R BLUE','R1-2L BLUE','R1-4R BLUE','R1-4L BLUE','R2-2R BLUE','R2-2L BLUE','R2-4R BLUE','R2-4L BLUE','R3-2/4R BLUE','R3-2/4L BLUE','R4-2R BLUE','R4-2L BLUE','L1-2L RED','L1-2R RED','L1-4L RED','L1-4R RED','R4-4R RED','R4-4L RED','L2-1L RED','L2-1R RED','L2-2L RED','L2-2R RED','L2-3L RED','L2-3R RED','L2-4L RED','L2-4R RED','L3-1L RED','L3-2L RED','L3-1R RED','L3-2R RED','L3-3L RED','L3-3R RED','L3-4L RED','L3-4R RED','L4-1L RED','L4-1R RED','L4-2L RED','L4-2R RED','L4-3L RED','L4-3R RED','L4-4L RED','L4-4R RED','R1-2R RED','R1-2L RED','R1-4R RED','R1-4L RED','R2-2R RED','R2-2L RED','R2-4R RED','R2-4L RED','R3-2/4R RED','R3-2/4L RED','R4-2R RED','R4-2L RED','L1-2L FAR RED','L1-2R FAR RED','L1-4L FAR RED']
-    print('FEATURES Time Controlled:' , end='          ')
-    print(len(time_controlled_features))
+    print('FEATURES Time Controlled:' , end='         ')
+    print("{:4.0f}".format(len(time_controlled_features)))
 
     environment_controlled_features = list(set(all_features) - set(time_controlled_features))
     OUT_FEATURES = environment_controlled_features
-    print('FEATURES Environment Controlled:' , end='   ')
-    print(len(environment_controlled_features), end=' ')
+    print('FEATURES Environment Controlled:' , end='  ')
+    print("{:4.0f}".format(len(environment_controlled_features)), end=' ')
     if len(all_features) == len(time_controlled_features)+len(environment_controlled_features):
         print('match')
     else:
@@ -186,9 +186,11 @@ test_df = df[int(n*0.9):]
 
 
 if model_target == 'Time Controlled':
+    num_input_features = df.shape[1]
     num_output_features = df.shape[1]
 
 if model_target == 'Environment Controlled':
+    num_input_features = df.shape[1]
     num_output_features = len(environment_controlled_features)
 
 
@@ -410,12 +412,22 @@ print(f'  Inputs shape: {multi_window_inputs.shape}')
 print(f'  labels shape: {multi_window_labels.shape}')
 print('──────────────────────────────')
 
+
+
 ###############################################################################
 # COMPILE AND FIT
 ###############################################################################
 
 # patience 4
 def compile_and_fit(model, window, patience=0, load=False):
+  checkpoint_path = "cp.ckpt"
+  checkpoint_dir = os.path.dirname(checkpoint_path)
+
+  # Create a callback that saves the model's weights
+  cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,
+                                                 save_weights_only=True,
+                                                 verbose=1)
+
   early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
                                                     patience=patience,
                                                     mode='min', restore_best_weights=True)
@@ -430,7 +442,7 @@ def compile_and_fit(model, window, patience=0, load=False):
   if not load:
       history = model.fit(window.train, epochs=MAX_EPOCHS,
                       validation_data=window.val,
-                      callbacks=[early_stopping])
+                      callbacks=[early_stopping,cp_callback])
   if load:
       history = None
 
@@ -483,6 +495,25 @@ def compute_repeat():
 
     plt.savefig('./models/' + model_target + '/REPEAT.svg')
 
+#####################################################################################
+# Neural Network MODELS
+####################################################################################
+
+
+def create_linear_model():
+  model = tf.keras.Sequential([
+      # Take the last time-step.
+      # Shape [batch, time, features] => [batch, 1, features]
+      tf.keras.layers.Lambda(lambda x: x[:, -1:, :] , input_shape=(IN_STEPS,num_input_features)),
+      # Shape => [batch, 1, out_steps*features]
+      tf.keras.layers.Dense(OUT_STEPS*num_output_features,
+                            kernel_initializer=tf.initializers.zeros),
+      # Shape => [batch, out_steps, features]
+      tf.keras.layers.Reshape([OUT_STEPS, num_output_features])
+  ])
+
+  return model
+
 
 
 def compute_linear():
@@ -492,25 +523,15 @@ def compute_linear():
 
     global multi_linear_model
 
-    multi_linear_model = tf.keras.Sequential([
-        # Take the last time-step.
-        # Shape [batch, time, features] => [batch, 1, features]
-        tf.keras.layers.Lambda(lambda x: x[:, -1:, :]),
-        # Shape => [batch, 1, out_steps*features]
-        tf.keras.layers.Dense(OUT_STEPS*num_output_features,
-                              kernel_initializer=tf.initializers.zeros),
-        # Shape => [batch, out_steps, features]
-        tf.keras.layers.Reshape([OUT_STEPS, num_output_features])
-    ])
+    multi_linear_model = create_linear_model()
+    multi_linear_model.summary()
 
     if purpose == 'train':
         history = compile_and_fit(multi_linear_model, multi_window)
 
     if purpose == 'load':
-        history = compile_and_fit(multi_linear_model, multi_window, load=True)
         print('LOADING ' + './models/' + path + '/LINEAR.h5')
-        multi_val_performance['Linear'] = multi_linear_model.evaluate(multi_window.val, verbose=0)
-        multi_linear_model.load_weights('./models/' + path + '/LINEAR.h5')
+        multi_linear_model = tf.keras.models.load_model('./models/' + path + '/LINEAR.h5')
 
     IPython.display.clear_output()
     multi_val_performance['Linear'] = multi_linear_model.evaluate(multi_window.val)
@@ -518,6 +539,8 @@ def compute_linear():
     multi_window.plot(multi_linear_model)
 
     plt.savefig('./models/' + model_target + model_type + '/LINEAR.svg')
+    multi_linear_model.save('models/' + model_target + model_type + '\LINEAR.h5', overwrite=True, save_format="tf")
+    print('LINEAR.h5 saved')
 
 
 def compute_dense():
@@ -542,6 +565,8 @@ def compute_dense():
 
     if purpose == 'train':
         history = compile_and_fit(multi_dense_model, multi_window)
+        print('SUMMARY')
+        multi_linear_model.summary()
 
     if purpose == 'load':
         history = compile_and_fit(multi_dense_model, multi_window, load=True)
@@ -579,6 +604,8 @@ def compute_conv():
 
     if purpose == 'train':
         history = compile_and_fit(multi_conv_model, multi_window)
+        print('SUMMARY')
+        multi_linear_model.summary()
 
     if purpose == 'load':
         history = compile_and_fit(multi_conv_model, multi_window, load=True)
@@ -615,6 +642,8 @@ def compute_lstm():
 
     if purpose == 'train':
         history = compile_and_fit(multi_lstm_model, multi_window)
+        print('SUMMARY')
+        multi_linear_model.summary()
 
     if purpose == 'load':
         history = compile_and_fit(multi_lstm_model, multi_window, load=True)
@@ -700,6 +729,8 @@ def compute_auto_lstm():
 
     if purpose == 'train':
         history = compile_and_fit(feedback_model, multi_window)
+        print('SUMMARY')
+        multi_linear_model.summary()
 
     if purpose == 'load':
         history = compile_and_fit(feedback_model, multi_window, load=True)
