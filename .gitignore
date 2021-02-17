@@ -9,3 +9,7 @@ test.py
 .idea/modules.xml
 .idea/other.xml
 .idea/vcs.xml
+*.data-00000-of-00001
+*.index
+checkpoints/checkpoint
+models/Environment Controlled/EC/backup/checkpoint

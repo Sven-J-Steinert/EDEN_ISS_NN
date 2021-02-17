@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from tensorflow import keras
+from tensorflow.keras import regularizers
 #physical_devices = tf.config.list_physical_devices('GPU')
 #tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
@@ -37,7 +38,7 @@ from sklearn.preprocessing import RobustScaler
 IN_STEPS = 288
 OUT_STEPS = IN_STEPS  # 288
 
-MAX_EPOCHS = 10
+MAX_EPOCHS = 5
 
 
 
@@ -304,7 +305,7 @@ def plot(self, model=None, plot_col=None, max_subplots=3):
           plot_col = 'FEG CO2 1'
 
   inputs, labels = self.example
-  plt.figure(figsize=(12, 8))
+  plt.figure(figsize=(13, 8))
   plot_col_index = self.column_indices[plot_col]
   max_n = min(max_subplots, len(inputs))
   for n in range(max_n):
@@ -332,7 +333,7 @@ def plot(self, model=None, plot_col=None, max_subplots=3):
     if n == 0:
       plt.legend()
 
-  plt.xlabel('Time [h]')
+  plt.xlabel('Time Steps')
   plt.xticks(rotation=0)
 
 WindowGenerator.plot = plot
@@ -354,6 +355,7 @@ def make_dataset(self, data):
       sequence_length=self.total_window_size,
       sequence_stride=1,
       shuffle=True,
+      seed=4444,
       batch_size=554,) # full train samples 33246
 
   ds = ds.map(self.split_window)
@@ -443,7 +445,7 @@ print('────────────────────────�
 ###############################################################################
 
 # patience 4
-def compile_and_fit(model, window, patience=4, load=False):
+def compile_and_fit(model, window, patience=8, load=False):
   checkpoint_path = "./checkpoints/cp.ckpt"
   checkpoint_dir = os.path.dirname(checkpoint_path)
 
@@ -468,7 +470,7 @@ def compile_and_fit(model, window, patience=4, load=False):
   if not load:
       history = model.fit(window.train, epochs=MAX_EPOCHS,
                       validation_data=window.val,
-                      callbacks=[early_stopping])
+                      callbacks=[reduce_lr])
   if load:
       history = None
 
@@ -585,8 +587,7 @@ def compute_linear():
         plt.savefig('./models/' + model_target + model_type + '/fig/LINEAR_6.svg')
         multi_window.plot(multi_linear_model, plot_col='VOLUME TANK 1')
         plt.savefig('./models/' + model_target + model_type + '/fig/LINEAR_7.svg')
-        multi_window.plot(multi_linear_model, plot_col='TEMP 1 TANK 1')
-        plt.savefig('./models/' + model_target + model_type + '/fig/LINEAR_8.svg')
+
 
     if model_target == 'Time Controlled':
         multi_window.plot(multi_linear_model)
@@ -650,8 +651,7 @@ def compute_dense():
           plt.savefig('./models/' + model_target + model_type + '/fig/DENSE_6.svg')
           multi_window.plot(multi_dense_model, plot_col='VOLUME TANK 1')
           plt.savefig('./models/' + model_target + model_type + '/fig/DENSE_7.svg')
-          multi_window.plot(multi_dense_model, plot_col='TEMP 1 TANK 1')
-          plt.savefig('./models/' + model_target + model_type + '/fig/DENSE_8.svg')
+
 
     if model_target == 'Time Controlled':
           multi_window.plot(multi_dense_model)
@@ -717,8 +717,7 @@ def compute_conv():
           plt.savefig('./models/' + model_target + model_type + '/fig/CONV_6.svg')
           multi_window.plot(multi_conv_model, plot_col='VOLUME TANK 1')
           plt.savefig('./models/' + model_target + model_type + '/fig/CONV_7.svg')
-          multi_window.plot(multi_conv_model, plot_col='TEMP 1 TANK 1')
-          plt.savefig('./models/' + model_target + model_type + '/fig/CONV_8.svg')
+
 
     if model_target == 'Time Controlled':
           multi_window.plot(multi_conv_model)
@@ -735,10 +734,10 @@ def compute_lstm():
     multi_lstm_model = tf.keras.Sequential([
         # Shape [batch, time, features] => [batch, lstm_units]
         # Adding more `lstm_units` just overfits more quickly.
-        tf.keras.layers.LSTM(128, return_sequences=False),
+        tf.keras.layers.LSTM(128, return_sequences=False, dropout=0.5, kernel_regularizer=regularizers.l2(0.001)),
         # Shape => [batch, out_steps*features]
         tf.keras.layers.Dense(OUT_STEPS*num_output_features,
-                              kernel_initializer=tf.initializers.zeros),
+                              kernel_initializer=tf.initializers.zeros,kernel_regularizer=regularizers.l2(0.0001)),
         # Shape => [batch, out_steps, features]
         tf.keras.layers.Reshape([OUT_STEPS, num_output_features])
     ])
@@ -746,7 +745,7 @@ def compute_lstm():
 
     if purpose == 'train':
 
-        history = compile_and_fit(multi_lstm_model, multi_window)
+        history['LSTM'] = compile_and_fit(multi_lstm_model, multi_window)
         multi_lstm_model.summary()
         multi_lstm_model.save_weights('./models/' + model_target + model_type + '/LSTM')
         print('LSTM weights saved under' + './models/' + model_target + model_type + '/LSTM')
@@ -781,12 +780,17 @@ def compute_lstm():
           plt.savefig('./models/' + model_target + model_type + '/fig/LSTM_6.svg')
           multi_window.plot(multi_lstm_model, plot_col='VOLUME TANK 1')
           plt.savefig('./models/' + model_target + model_type + '/fig/LSTM_7.svg')
-          multi_window.plot(multi_lstm_model, plot_col='TEMP 1 TANK 1')
-          plt.savefig('./models/' + model_target + model_type + '/fig/LSTM_8.svg')
+
 
     if model_target == 'Time Controlled':
           multi_window.plot(multi_lstm_model)
           plt.savefig('./models/' + model_target + model_type + '/LSTM.svg')
+
+
+    plotter = tfdocs.plots.HistoryPlotter(metric = 'mean_absolute_error', smoothing_std=10)
+    plotter.plot(history)
+    plt.ylim([0.5, 0.7])
+
 
 
 

@@ -1,2 +1,2 @@
-model_checkpoint_path: "LINEAR"
-all_model_checkpoint_paths: "LINEAR"
+model_checkpoint_path: "LSTM"
+all_model_checkpoint_paths: "LSTM"
