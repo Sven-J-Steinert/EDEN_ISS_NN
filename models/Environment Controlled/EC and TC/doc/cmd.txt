@@ -1,0 +1,273 @@
+2021-02-19 20:21:56.031651: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cudart64_110.dll
+2021-02-19 20:21:59.017071: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library nvcuda.dll
+2021-02-19 20:21:59.063753: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1720] Found device 0 with properties:
+pciBusID: 0000:01:00.0 name: GeForce GTX 970 computeCapability: 5.2
+coreClock: 1.329GHz coreCount: 13 deviceMemorySize: 4.00GiB deviceMemoryBandwidth: 208.91GiB/s
+2021-02-19 20:21:59.063944: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cudart64_110.dll
+2021-02-19 20:21:59.087286: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cublas64_11.dll
+2021-02-19 20:21:59.088530: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cublasLt64_11.dll
+2021-02-19 20:21:59.108950: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cufft64_10.dll
+2021-02-19 20:21:59.121680: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library curand64_10.dll
+2021-02-19 20:21:59.134150: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cusolver64_10.dll
+2021-02-19 20:21:59.140456: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cusparse64_11.dll
+2021-02-19 20:21:59.150320: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cudnn64_8.dll
+2021-02-19 20:21:59.170056: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1862] Adding visible gpu devices: 0
+2021-02-19 20:21:59.855142: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1261] Device interconnect StreamExecutor with strength 1 edge matrix:
+2021-02-19 20:21:59.855278: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1267]      0
+2021-02-19 20:21:59.856606: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1280] 0:   N
+2021-02-19 20:21:59.864331: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1406] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 3686 MB memory) -> physical GPU (device: 0, name: GeForce GTX 970, pci bus id: 0000:01:00.0, compute capability: 5.2)
+2021-02-19 20:21:59.866087: I tensorflow/compiler/jit/xla_gpu_device.cc:99] Not creating XLA devices, tf_xla_enable_xla_devices not set
+WARNING:tensorflow:From G:\GitLab Sync\EDEN_ISS_NN\EDEN_ISS_NN.py:52: The name tf.keras.backend.set_session is deprecated. Please use tf.compat.v1.keras.backend.set_session instead.
+
+
+Tensorflow Version 2.4.1
+
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                        │
+│    ███████ ██████  ███████ ███    ██     ██ ███████ ███████     ███    ██ ███    ██    │
+│    ██      ██   ██ ██      ████   ██     ██ ██      ██          ████   ██ ████   ██    │
+│    █████   ██   ██ █████   ██ ██  ██     ██ ███████ ███████     ██ ██  ██ ██ ██  ██    │
+│    ██      ██   ██ ██      ██  ██ ██     ██      ██      ██     ██  ██ ██ ██  ██ ██    │
+│    ███████ ██████  ███████ ██   ████     ██ ███████ ███████     ██   ████ ██   ████    │
+│                                                                                        │
+│    build on           CUDA 11.0    cuDNN 8.1.0    Tensorflow 2.4.1                     │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+
+Select the model target:
+┌───────────────────────────┐
+│ 0) Identify Constants     │
+│ 1) Time Controlled        │
+│ 2) Environment Controlled │
+└───────────────────────────┘
+Select option: 2
+
+Select model type:
+┌───────────────────────────┐
+│ 0) explain with EC only   │
+│ 1) explain with EC and TC │
+│ 2) final EC and TC model  │
+└───────────────────────────┘
+Select option: 1
+
+READING datasets/dataset_full.csv (47495, 183)
+
+FEATURES total:                    183
+FEATURES Time Controlled:           87
+FEATURES Environment Controlled:    96 match
+
+scale features?  [y]/ n
+-> features scaled.
+2021-02-19 20:22:03.971576: I tensorflow/compiler/jit/xla_cpu_device.cc:41] Not creating XLA devices, tf_xla_enable_xla_devices not set
+2021-02-19 20:22:03.976817: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1720] Found device 0 with properties:
+pciBusID: 0000:01:00.0 name: GeForce GTX 970 computeCapability: 5.2
+coreClock: 1.329GHz coreCount: 13 deviceMemorySize: 4.00GiB deviceMemoryBandwidth: 208.91GiB/s
+2021-02-19 20:22:03.977538: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cudart64_110.dll
+2021-02-19 20:22:03.978405: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cublas64_11.dll
+2021-02-19 20:22:03.979200: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cublasLt64_11.dll
+2021-02-19 20:22:03.980032: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cufft64_10.dll
+2021-02-19 20:22:03.980797: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library curand64_10.dll
+2021-02-19 20:22:03.981549: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cusolver64_10.dll
+2021-02-19 20:22:03.982316: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cusparse64_11.dll
+2021-02-19 20:22:03.983068: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cudnn64_8.dll
+2021-02-19 20:22:03.983882: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1862] Adding visible gpu devices: 0
+2021-02-19 20:22:03.985311: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1720] Found device 0 with properties:
+pciBusID: 0000:01:00.0 name: GeForce GTX 970 computeCapability: 5.2
+coreClock: 1.329GHz coreCount: 13 deviceMemorySize: 4.00GiB deviceMemoryBandwidth: 208.91GiB/s
+2021-02-19 20:22:03.996713: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cudart64_110.dll
+2021-02-19 20:22:03.997524: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cublas64_11.dll
+2021-02-19 20:22:03.998382: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cublasLt64_11.dll
+2021-02-19 20:22:03.999129: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cufft64_10.dll
+2021-02-19 20:22:03.999927: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library curand64_10.dll
+2021-02-19 20:22:04.000661: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cusolver64_10.dll
+2021-02-19 20:22:04.001425: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cusparse64_11.dll
+2021-02-19 20:22:04.002178: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cudnn64_8.dll
+2021-02-19 20:22:04.003063: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1862] Adding visible gpu devices: 0
+2021-02-19 20:22:04.003843: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1261] Device interconnect StreamExecutor with strength 1 edge matrix:
+2021-02-19 20:22:04.004554: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1267]      0
+2021-02-19 20:22:04.005311: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1280] 0:   N
+2021-02-19 20:22:04.006339: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1406] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 3686 MB memory) -> physical GPU (device: 0, name: GeForce GTX 970, pci bus id: 0000:01:00.0, compute capability: 5.2)
+2021-02-19 20:22:04.007007: I tensorflow/compiler/jit/xla_gpu_device.cc:99] Not creating XLA devices, tf_xla_enable_xla_devices not set
+
+All shapes are: (batch, time, features)
+──────────────────────────────
+  Window shape: (3, 576, 183)
+  Inputs shape: (3, 288, 183)
+  labels shape: (3, 288, 96)
+──────────────────────────────
+┌────────────────┐
+│ BASELINE MODEL │
+└────────────────┘
+2021-02-19 20:22:04.317371: I tensorflow/compiler/mlir/mlir_graph_optimization_pass.cc:116] None of the MLIR optimization passes are enabled (registered 2)
+17/17 [==============================] - 6s 321ms/step - loss: 1.9632 - mean_absolute_error: 0.8906
+8/8 [==============================] - 3s 313ms/step - loss: 1.9187 - mean_absolute_error: 0.8590
+
+Select Model to compute:
+┌──────────────────┐
+│ 1) Linear        │
+│ 2) Dense         │
+│ 3) Convolutional │
+│ 4) LSTM          │
+│ 6) all           │
+└──────────────────┘
+Select option: 6
+┌────────────────┐
+│  LINEAR MODEL  │421 sec
+└────────────────┘
+using callback [early stopping]
+Epoch 1/10
+2021-02-19 19:58:43.670392: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cublas64_11.dll
+2021-02-19 19:58:43.998944: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cublasLt64_11.dll
+59/59 [==============================] - 43s 703ms/step - loss: 0.8373 - mean_absolute_error: 0.6086 - val_loss: 1.1211 - val_mean_absolute_error: 0.7708
+Epoch 2/10
+59/59 [==============================] - 42s 700ms/step - loss: 0.6778 - mean_absolute_error: 0.5223 - val_loss: 1.1122 - val_mean_absolute_error: 0.7624
+Epoch 3/10
+59/59 [==============================] - 43s 714ms/step - loss: 0.6420 - mean_absolute_error: 0.4995 - val_loss: 1.1109 - val_mean_absolute_error: 0.7553
+Epoch 4/10
+59/59 [==============================] - 41s 695ms/step - loss: 0.6279 - mean_absolute_error: 0.4886 - val_loss: 1.1055 - val_mean_absolute_error: 0.7520
+Epoch 5/10
+59/59 [==============================] - 41s 680ms/step - loss: 0.6099 - mean_absolute_error: 0.4797 - val_loss: 1.1007 - val_mean_absolute_error: 0.7482
+Epoch 6/10
+59/59 [==============================] - 41s 690ms/step - loss: 0.6083 - mean_absolute_error: 0.4759 - val_loss: 1.0912 - val_mean_absolute_error: 0.7422
+Epoch 7/10
+59/59 [==============================] - 42s 699ms/step - loss: 0.6069 - mean_absolute_error: 0.4727 - val_loss: 1.0860 - val_mean_absolute_error: 0.7395
+Epoch 8/10
+59/59 [==============================] - 42s 712ms/step - loss: 0.6016 - mean_absolute_error: 0.4694 - val_loss: 1.0712 - val_mean_absolute_error: 0.7324
+Epoch 9/10
+59/59 [==============================] - 42s 711ms/step - loss: 0.5951 - mean_absolute_error: 0.4668 - val_loss: 1.0661 - val_mean_absolute_error: 0.7283
+Epoch 10/10
+59/59 [==============================] - 43s 719ms/step - loss: 0.5976 - mean_absolute_error: 0.4661 - val_loss: 1.0654 - val_mean_absolute_error: 0.7273
+Model: "sequential"
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+=================================================================
+lambda (Lambda)              (None, 1, 183)            0
+_________________________________________________________________
+dense (Dense)                (None, 1, 27648)          5087232
+_________________________________________________________________
+reshape (Reshape)            (None, 288, 96)           0
+=================================================================
+Total params: 5,087,232
+Trainable params: 5,087,232
+Non-trainable params: 0
+_________________________________________________________________
+LINEAR weights saved under./models/Environment Controlled/EC and TC/LINEAR
+17/17 [==============================] - 10s 514ms/step - loss: 1.0654 - mean_absolute_error: 0.7273
+8/8 [==============================] - 5s 495ms/step - loss: 1.1253 - mean_absolute_error: 0.7232
+┌────────────────┐
+│  DENSE MODEL   │222 sec
+└────────────────┘
+using callback [early stopping]
+Epoch 1/10
+59/59 [==============================] - 48s 789ms/step - loss: 0.7688 - mean_absolute_error: 0.5683 - val_loss: 1.0856 - val_mean_absolute_error: 0.7308
+Epoch 2/10
+59/59 [==============================] - 45s 758ms/step - loss: 0.5477 - mean_absolute_error: 0.4340 - val_loss: 1.0888 - val_mean_absolute_error: 0.7240
+Epoch 3/10
+59/59 [==============================] - 43s 718ms/step - loss: 0.5019 - mean_absolute_error: 0.4096 - val_loss: 1.1085 - val_mean_absolute_error: 0.7280
+Epoch 4/10
+59/59 [==============================] - 43s 722ms/step - loss: 0.4744 - mean_absolute_error: 0.3956 - val_loss: 1.1278 - val_mean_absolute_error: 0.7342
+Epoch 5/10
+59/59 [==============================] - 43s 720ms/step - loss: 0.4445 - mean_absolute_error: 0.3809 - val_loss: 1.1694 - val_mean_absolute_error: 0.7505
+Model: "sequential_1"
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+=================================================================
+lambda_1 (Lambda)            (None, 1, 183)            0
+_________________________________________________________________
+dense_1 (Dense)              (None, 1, 1024)           188416
+_________________________________________________________________
+dense_2 (Dense)              (None, 1, 27648)          28339200
+_________________________________________________________________
+reshape_1 (Reshape)          (None, 288, 96)           0
+=================================================================
+Total params: 28,527,616
+Trainable params: 28,527,616
+Non-trainable params: 0
+_________________________________________________________________
+DENSE weights saved under./models/Environment Controlled/EC and TC/DENSE
+17/17 [==============================] - 9s 488ms/step - loss: 1.0856 - mean_absolute_error: 0.7308
+8/8 [==============================] - 5s 505ms/step - loss: 1.0504 - mean_absolute_error: 0.6956
+┌────────────────┐
+│ CONVOLUTIONAL  │252 sec 
+└────────────────┘
+using callback [early stopping]
+Epoch 1/10
+2021-02-19 20:10:17.905547: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cudnn64_8.dll
+2021-02-19 20:10:18.657011: I tensorflow/core/platform/windows/subprocess.cc:308] SubProcess ended with return code: 0
+
+2021-02-19 20:10:18.733047: I tensorflow/core/platform/windows/subprocess.cc:308] SubProcess ended with return code: 0
+
+59/59 [==============================] - 59s 897ms/step - loss: 1.0662 - mean_absolute_error: 0.6750 - val_loss: 0.8154 - val_mean_absolute_error: 0.6116
+Epoch 2/10
+59/59 [==============================] - 50s 836ms/step - loss: 0.3577 - mean_absolute_error: 0.3126 - val_loss: 0.9145 - val_mean_absolute_error: 0.6643
+Epoch 3/10
+59/59 [==============================] - 48s 814ms/step - loss: 0.2895 - mean_absolute_error: 0.2697 - val_loss: 0.9952 - val_mean_absolute_error: 0.6976
+Epoch 4/10
+59/59 [==============================] - 48s 806ms/step - loss: 0.2592 - mean_absolute_error: 0.2505 - val_loss: 1.0442 - val_mean_absolute_error: 0.7178
+Epoch 5/10
+59/59 [==============================] - 47s 788ms/step - loss: 0.2376 - mean_absolute_error: 0.2368 - val_loss: 1.0408 - val_mean_absolute_error: 0.7128
+Model: "sequential_2"
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+=================================================================
+lambda_2 (Lambda)            (None, 288, 183)          0
+_________________________________________________________________
+conv1d (Conv1D)              (None, 1, 512)            26984960
+_________________________________________________________________
+dense_3 (Dense)              (None, 1, 27648)          14183424
+_________________________________________________________________
+reshape_2 (Reshape)          (None, 288, 96)           0
+=================================================================
+Total params: 41,168,384
+Trainable params: 41,168,384
+Non-trainable params: 0
+_________________________________________________________________
+CONV weights saved under./models/Environment Controlled/EC and TC/CONV
+17/17 [==============================] - 10s 535ms/step - loss: 0.8154 - mean_absolute_error: 0.6116
+8/8 [==============================] - 5s 498ms/step - loss: 0.8163 - mean_absolute_error: 0.5347
+┌────────────────┐
+│   LSTM MODEL   │
+└────────────────┘
+using callback [early stopping]
+Epoch 1/10
+2021-02-19 20:22:19.059702: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cublas64_11.dll
+2021-02-19 20:22:19.393572: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cublasLt64_11.dll
+2021-02-19 20:22:20.631070: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cudnn64_8.dll
+59/59 [==============================] - 53s 834ms/step - loss: 0.8764 - mean_absolute_error: 0.6267 - val_loss: 0.9436 - val_mean_absolute_error: 0.6750
+Epoch 2/10
+59/59 [==============================] - 49s 831ms/step - loss: 0.5347 - mean_absolute_error: 0.4124 - val_loss: 0.8626 - val_mean_absolute_error: 0.6212
+Epoch 3/10
+59/59 [==============================] - 49s 829ms/step - loss: 0.4281 - mean_absolute_error: 0.3417 - val_loss: 0.8573 - val_mean_absolute_error: 0.6208
+Epoch 4/10
+59/59 [==============================] - 49s 829ms/step - loss: 0.3987 - mean_absolute_error: 0.3312 - val_loss: 0.9092 - val_mean_absolute_error: 0.6436
+Epoch 5/10
+59/59 [==============================] - 49s 825ms/step - loss: 0.3532 - mean_absolute_error: 0.3024 - val_loss: 0.9424 - val_mean_absolute_error: 0.6578
+Epoch 6/10
+59/59 [==============================] - 47s 791ms/step - loss: 0.3352 - mean_absolute_error: 0.2907 - val_loss: 0.9671 - val_mean_absolute_error: 0.6677
+Epoch 7/10
+59/59 [==============================] - 47s 791ms/step - loss: 0.3218 - mean_absolute_error: 0.2812 - val_loss: 0.9555 - val_mean_absolute_error: 0.6631
+Model: "sequential"
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+=================================================================
+lstm (LSTM)                  (None, 128)               159744
+_________________________________________________________________
+dense (Dense)                (None, 27648)             3566592
+_________________________________________________________________
+reshape (Reshape)            (None, 288, 96)           0
+=================================================================
+Total params: 3,726,336
+Trainable params: 3,726,336
+Non-trainable params: 0
+_________________________________________________________________
+LSTM weights saved under./models/Environment Controlled/EC and TC/LSTM
+17/17 [==============================] - 10s 520ms/step - loss: 0.8573 - mean_absolute_error: 0.6208
+8/8 [==============================] - 5s 489ms/step - loss: 0.9870 - mean_absolute_error: 0.5726
+
+┌──── Test MAE ────┐
+│ Last    : 0.8590 │
+│ Linear  : 0.7232 │
+│ Dense   : 0.6956 │
+│ Conv    : 0.5347 │	
+│ LSTM    : 0.5726 │
+└──────────────────┘
+end.
