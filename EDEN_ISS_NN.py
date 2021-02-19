@@ -15,12 +15,14 @@ import pandas as pd
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import regularizers
-#physical_devices = tf.config.list_physical_devices('GPU')
-#tf.config.experimental.set_memory_growth(physical_devices[0], True)
+
+# pip install -q git+https://github.com/tensorflow/docs
+import tensorflow_docs as tfdocs
+import tensorflow_docs.plots
+
 
 config = tf.compat.v1.ConfigProto(gpu_options =
                          tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=0.8)
-# device_count = {'GPU': 1}
 )
 config.gpu_options.allow_growth = True
 session = tf.compat.v1.Session(config=config)
@@ -38,8 +40,9 @@ from sklearn.preprocessing import RobustScaler
 IN_STEPS = 288
 OUT_STEPS = IN_STEPS  # 288
 
-MAX_EPOCHS = 5
+MAX_EPOCHS = 2
 
+KEY_FEATURES = ['FEG TEMPERATURE 1','FEG HUMIDITY 1','FEG CO2 1','FEG OXYGEN','pH 1 TANK 1','EC 1 TANK 1','VOLUME TANK 1' ]
 
 
 print('')
@@ -55,18 +58,6 @@ print('│    ███████ ██████  ███████ �
 print('│                                                                                        │')
 print('│    build on           CUDA 11.0    cuDNN 8.1.0    Tensorflow 2.4.1                     │')
 print('└────────────────────────────────────────────────────────────────────────────────────────┘')
-print('')
-print('Select purpose:')
-print('┌───────────────────────────┐')
-print('│ 1) Train Network          │')
-print('│ 2) Load Network           │')
-print('└───────────────────────────┘')
-
-num = int(input("Select option: "))
-options = {1 : 'train',
-           2 : 'load',
-}
-purpose = options[num]
 
 ###############################################################################
 # SELECTING MODEL TARGET
@@ -91,6 +82,7 @@ path = model_target
 ###############################################################################
 # LOADING DATA
 ###############################################################################
+
 if model_target == 'Identify Constants':
     file = 'dataset_full_with_constants.csv'
 
@@ -106,16 +98,18 @@ if model_target == 'Environment Controlled':
     print('┌───────────────────────────┐')
     print('│ 0) explain with EC only   │')
     print('│ 1) explain with EC and TC │')
+    print('│ 2) final EC and TC model  │')
     print('└───────────────────────────┘')
 
     num = int(input("Select option: "))
     options = { 0 : '/EC',
-                1 : '/EC and TC',}
+                1 : '/EC and TC',
+                2 : '/final',}
     model_type = options[num]
     path = path + model_type
     if model_type == '/EC':
         file = 'dataset_environment_controlled.csv'
-    if model_type == '/EC and TC':
+    if model_type == '/EC and TC' or model_type == '/final':
         file = 'dataset_full.csv'
 else:
     model_type  = ''
@@ -142,7 +136,7 @@ if model_target == 'Environment Controlled':
     print('FEATURES total:' , end='                   ')
     print("{:4.0f}".format(len(all_features)))
     time_controlled_features = []
-    if model_type == '/EC and TC':
+    if model_type == '/EC and TC' or model_type == '/final':
         time_controlled_features = ['L1-2L BLUE','L1-2R BLUE','L1-4L BLUE','L1-4R BLUE','R4-4R BLUE','R4-4L BLUE','L2-1L BLUE','L2-1R BLUE','L2-2L BLUE','L2-2R BLUE','L2-3L BLUE','L2-3R BLUE','L2-4L BLUE','L2-4R BLUE','L3-1L BLUE','L3-2L BLUE','L3-1R BLUE','L3-2R BLUE','L3-3L BLUE','L3-3R BLUE','L3-4L BLUE','L3-4R BLUE','L4-1L BLUE','L4-1R BLUE','L4-2L BLUE','L4-2R BLUE','L4-3L BLUE','L4-3R BLUE','L4-4L BLUE','L4-4R BLUE','R1-2R BLUE','R1-2L BLUE','R1-4R BLUE','R1-4L BLUE','R2-2R BLUE','R2-2L BLUE','R2-4R BLUE','R2-4L BLUE','R3-2/4R BLUE','R3-2/4L BLUE','R4-2R BLUE','R4-2L BLUE','L1-2L RED','L1-2R RED','L1-4L RED','L1-4R RED','R4-4R RED','R4-4L RED','L2-1L RED','L2-1R RED','L2-2L RED','L2-2R RED','L2-3L RED','L2-3R RED','L2-4L RED','L2-4R RED','L3-1L RED','L3-2L RED','L3-1R RED','L3-2R RED','L3-3L RED','L3-3R RED','L3-4L RED','L3-4R RED','L4-1L RED','L4-1R RED','L4-2L RED','L4-2R RED','L4-3L RED','L4-3R RED','L4-4L RED','L4-4R RED','R1-2R RED','R1-2L RED','R1-4R RED','R1-4L RED','R2-2R RED','R2-2L RED','R2-4R RED','R2-4L RED','R3-2/4R RED','R3-2/4L RED','R4-2R RED','R4-2L RED','L1-2L FAR RED','L1-2R FAR RED','L1-4L FAR RED']
 
     print('FEATURES Time Controlled:' , end='         ')
@@ -156,6 +150,7 @@ if model_target == 'Environment Controlled':
         print('match')
     else:
         print('mismatch')
+
 
 
 ###############################################################################
@@ -172,7 +167,6 @@ if model_target == 'Identify Constants':
     plt.savefig('./figures/' + model_target + '/feature.svg')
     plt.show()
     print('end.')
-    exit(0)
 
 if model_target == 'plot':
     plot_features =  df.iloc[:, 0:1]
@@ -441,11 +435,11 @@ print('────────────────────────�
 
 
 ###############################################################################
-# COMPILE AND FIT
+# COMPILE AND FIT FUNCTION
 ###############################################################################
 
 # patience 4
-def compile_and_fit(model, window, patience=8, load=False):
+def compile_and_fit(model, window, patience=8):
   checkpoint_path = "./checkpoints/cp.ckpt"
   checkpoint_dir = os.path.dirname(checkpoint_path)
 
@@ -454,10 +448,12 @@ def compile_and_fit(model, window, patience=8, load=False):
                                                  save_weights_only=True,
                                                  verbose=1)
 
+  # use early stopping for multi models to get fast result
   early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
                                                     patience=patience,
                                                     mode='min', restore_best_weights=True)
 
+  # use reduced learning rate for final model for best performance
   reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2,
                               patience=5, min_lr=0.001)
 
@@ -465,14 +461,15 @@ def compile_and_fit(model, window, patience=8, load=False):
                 optimizer=tf.optimizers.Adam(),
                 metrics=[tf.metrics.MeanAbsoluteError()])
 
-
-
-  if not load:
+  if model_target == 'Environment Controlled' and model_type == '/final':
       history = model.fit(window.train, epochs=MAX_EPOCHS,
-                      validation_data=window.val,
-                      callbacks=[reduce_lr])
-  if load:
-      history = None
+                          validation_data=window.val,
+                          callbacks=[reduce_lr])
+  else:
+      history = model.fit(window.train, epochs=MAX_EPOCHS,
+                          validation_data=window.val,
+                          callbacks=[early_stopping])
+
 
   return history
 
@@ -501,6 +498,14 @@ if model_target == 'Environment Controlled':
     multi_val_performance['Last'] = last_baseline.evaluate(multi_window_baseline.val)
     multi_performance['Last'] = last_baseline.evaluate(multi_window_baseline.test, verbose=0)
 
+###############################################################################
+
+if model_target == 'Identify Constants':
+    sd = df.std()
+    print(sd)
+
+###############################################################################
+
 
 class RepeatBaseline(tf.keras.Model):
   def call(self, inputs):
@@ -523,11 +528,10 @@ def compute_repeat():
 
     plt.savefig('./models/' + model_target + '/REPEAT.svg')
 
-#####################################################################################
-# Neural Network MODELS
-####################################################################################
 
-
+###############################################################################
+# Neural Network MODELS - for multi model testing
+###############################################################################
 
 def compute_linear():
     print('┌────────────────┐')
@@ -549,23 +553,12 @@ def compute_linear():
     ])
 
 
-    if purpose == 'train':
 
-        history = compile_and_fit(multi_linear_model, multi_window)
-        multi_linear_model.summary()
-        multi_linear_model.save_weights('./models/' + model_target + model_type + '/LINEAR')
-        print('LINEAR weights saved under' + './models/' + model_target + model_type + '/LINEAR')
+    history['LINEAR'] = compile_and_fit(multi_linear_model, multi_window)
+    multi_linear_model.summary()
+    multi_linear_model.save_weights('./models/' + model_target + model_type + '/LINEAR')
+    print('LINEAR weights saved under' + './models/' + model_target + model_type + '/LINEAR')
 
-
-    if purpose == 'load':
-
-        multi_linear_model.compile(loss=tf.losses.MeanSquaredError(),
-                      optimizer=tf.optimizers.Adam(),
-                      metrics=[tf.metrics.MeanAbsoluteError()])
-
-        print('LOADING ' + './models/' + path + '/LINEAR', end='         ', flush=True)
-        multi_linear_model.load_weights('./models/' + model_target + model_type + '/LINEAR')
-        print('---> loaded.')
 
 
 
@@ -573,20 +566,9 @@ def compute_linear():
     multi_val_performance['Linear'] = multi_linear_model.evaluate(multi_window.val)
     multi_performance['Linear'] = multi_linear_model.evaluate(multi_window.test, verbose=0)
     if model_target == 'Environment Controlled':
-        multi_window.plot(multi_linear_model, plot_col='FEG TEMPERATURE 1')
-        plt.savefig('./models/' + model_target + model_type + '/fig/LINEAR_1.svg')
-        multi_window.plot(multi_linear_model, plot_col='FEG HUMIDITY 1')
-        plt.savefig('./models/' + model_target + model_type + '/fig/LINEAR_2.svg')
-        multi_window.plot(multi_linear_model, plot_col='FEG CO2 1')
-        plt.savefig('./models/' + model_target + model_type + '/fig/LINEAR_3.svg')
-        multi_window.plot(multi_linear_model, plot_col='FEG OXYGEN')
-        plt.savefig('./models/' + model_target + model_type + '/fig/LINEAR_4.svg')
-        multi_window.plot(multi_linear_model, plot_col='pH 1 TANK 1')
-        plt.savefig('./models/' + model_target + model_type + '/fig/LINEAR_5.svg')
-        multi_window.plot(multi_linear_model, plot_col='EC 1 TANK 1')
-        plt.savefig('./models/' + model_target + model_type + '/fig/LINEAR_6.svg')
-        multi_window.plot(multi_linear_model, plot_col='VOLUME TANK 1')
-        plt.savefig('./models/' + model_target + model_type + '/fig/LINEAR_7.svg')
+        for x in range(0,len(KEY_FEATURES)):
+        multi_window.plot(multi_linear_model, plot_col=KEY_FEATURES[x])
+        plt.savefig('./models/' + model_target + model_type + '/fig/LSTM_' + str(x) +'.svg')
 
 
     if model_target == 'Time Controlled':
@@ -615,42 +597,19 @@ def compute_dense():
     ])
 
 
-    if purpose == 'train':
+    history['DENSE'] = compile_and_fit(multi_dense_model, multi_window)
+    multi_dense_model.summary()
+    multi_dense_model.save_weights('./models/' + model_target + model_type + '/DENSE')
+    print('DENSE weights saved under' + './models/' + model_target + model_type + '/DENSE')
 
-        history = compile_and_fit(multi_dense_model, multi_window)
-        multi_dense_model.summary()
-        multi_dense_model.save_weights('./models/' + model_target + model_type + '/DENSE')
-        print('DENSE weights saved under' + './models/' + model_target + model_type + '/DENSE')
-
-
-    if purpose == 'load':
-
-        multi_dense_model.compile(loss=tf.losses.MeanSquaredError(),
-                      optimizer=tf.optimizers.Adam(),
-                      metrics=[tf.metrics.MeanAbsoluteError()])
-
-        print('LOADING ' + './models/' + path + '/DENSE', end='         ', flush=True)
-        multi_dense_model.load_weights('./models/' + model_target + model_type + '/DENSE')
-        print('---> loaded.')
 
     IPython.display.clear_output()
     multi_val_performance['Dense'] = multi_dense_model.evaluate(multi_window.val)
     multi_performance['Dense'] = multi_dense_model.evaluate(multi_window.test, verbose=0)
     if model_target == 'Environment Controlled':
-          multi_window.plot(multi_dense_model, plot_col='FEG TEMPERATURE 1')
-          plt.savefig('./models/' + model_target + model_type + '/fig/DENSE_1.svg')
-          multi_window.plot(multi_dense_model, plot_col='FEG HUMIDITY 1')
-          plt.savefig('./models/' + model_target + model_type + '/fig/DENSE_2.svg')
-          multi_window.plot(multi_dense_model, plot_col='FEG CO2 1')
-          plt.savefig('./models/' + model_target + model_type + '/fig/DENSE_3.svg')
-          multi_window.plot(multi_dense_model, plot_col='FEG OXYGEN')
-          plt.savefig('./models/' + model_target + model_type + '/fig/DENSE_4.svg')
-          multi_window.plot(multi_dense_model, plot_col='pH 1 TANK 1')
-          plt.savefig('./models/' + model_target + model_type + '/fig/DENSE_5.svg')
-          multi_window.plot(multi_dense_model, plot_col='EC 1 TANK 1')
-          plt.savefig('./models/' + model_target + model_type + '/fig/DENSE_6.svg')
-          multi_window.plot(multi_dense_model, plot_col='VOLUME TANK 1')
-          plt.savefig('./models/' + model_target + model_type + '/fig/DENSE_7.svg')
+          for x in range(0,len(KEY_FEATURES)):
+              multi_window.plot(multi_dense_model, plot_col=KEY_FEATURES[x])
+              plt.savefig('./models/' + model_target + model_type + '/fig/DENSE_' + str(x) +'.svg')
 
 
     if model_target == 'Time Controlled':
@@ -679,44 +638,20 @@ def compute_conv():
         tf.keras.layers.Reshape([OUT_STEPS, num_output_features])
     ])
 
+    history = compile_and_fit(multi_conv_model, multi_window)
+    multi_conv_model.summary()
+    multi_conv_model.save_weights('./models/' + model_target + model_type + '/CONV')
+    print('CONV weights saved under' + './models/' + model_target + model_type + '/CONV')
 
-    if purpose == 'train':
-
-        history = compile_and_fit(multi_conv_model, multi_window)
-        multi_conv_model.summary()
-        multi_conv_model.save_weights('./models/' + model_target + model_type + '/CONV')
-        print('CONV weights saved under' + './models/' + model_target + model_type + '/CONV')
-
-
-    if purpose == 'load':
-
-        multi_linear_model.compile(loss=tf.losses.MeanSquaredError(),
-                      optimizer=tf.optimizers.Adam(),
-                      metrics=[tf.metrics.MeanAbsoluteError()])
-
-        print('LOADING ' + './models/' + path + '/LINEAR', end='         ', flush=True)
-        multi_linear_model.load_weights('./models/' + model_target + model_type + '/LINEAR')
-        print('---> loaded.')
 
     IPython.display.clear_output()
 
     multi_val_performance['Conv'] = multi_conv_model.evaluate(multi_window.val)
     multi_performance['Conv'] = multi_conv_model.evaluate(multi_window.test, verbose=0)
     if model_target == 'Environment Controlled':
-          multi_window.plot(multi_conv_model, plot_col='FEG TEMPERATURE 1')
-          plt.savefig('./models/' + model_target + model_type + '/fig/CONV_1.svg')
-          multi_window.plot(multi_conv_model, plot_col='FEG HUMIDITY 1')
-          plt.savefig('./models/' + model_target + model_type + '/fig/CONV_2.svg')
-          multi_window.plot(multi_conv_model, plot_col='FEG CO2 1')
-          plt.savefig('./models/' + model_target + model_type + '/fig/CONV_3.svg')
-          multi_window.plot(multi_conv_model, plot_col='FEG OXYGEN')
-          plt.savefig('./models/' + model_target + model_type + '/fig/CONV_4.svg')
-          multi_window.plot(multi_conv_model, plot_col='pH 1 TANK 1')
-          plt.savefig('./models/' + model_target + model_type + '/fig/CONV_5.svg')
-          multi_window.plot(multi_conv_model, plot_col='EC 1 TANK 1')
-          plt.savefig('./models/' + model_target + model_type + '/fig/CONV_6.svg')
-          multi_window.plot(multi_conv_model, plot_col='VOLUME TANK 1')
-          plt.savefig('./models/' + model_target + model_type + '/fig/CONV_7.svg')
+          for x in range(0,len(KEY_FEATURES)):
+              multi_window.plot(multi_conv_model, plot_col=KEY_FEATURES[x])
+              plt.savefig('./models/' + model_target + model_type + '/fig/CONV_' + str(x) +'.svg')
 
 
     if model_target == 'Time Controlled':
@@ -734,62 +669,41 @@ def compute_lstm():
     multi_lstm_model = tf.keras.Sequential([
         # Shape [batch, time, features] => [batch, lstm_units]
         # Adding more `lstm_units` just overfits more quickly.
-        tf.keras.layers.LSTM(128, return_sequences=False, dropout=0.5, kernel_regularizer=regularizers.l2(0.001)),
+        tf.keras.layers.LSTM(128, return_sequences=False),
         # Shape => [batch, out_steps*features]
         tf.keras.layers.Dense(OUT_STEPS*num_output_features,
-                              kernel_initializer=tf.initializers.zeros,kernel_regularizer=regularizers.l2(0.0001)),
+                              kernel_initializer=tf.initializers.zeros),
         # Shape => [batch, out_steps, features]
         tf.keras.layers.Reshape([OUT_STEPS, num_output_features])
     ])
 
 
-    if purpose == 'train':
+    history['LSTM'] = compile_and_fit(multi_lstm_model, multi_window)
+    multi_lstm_model.summary()
+    multi_lstm_model.save_weights('./models/' + model_target + model_type + '/LSTM')
+    print('LSTM weights saved under' + './models/' + model_target + model_type + '/LSTM')
 
-        history['LSTM'] = compile_and_fit(multi_lstm_model, multi_window)
-        multi_lstm_model.summary()
-        multi_lstm_model.save_weights('./models/' + model_target + model_type + '/LSTM')
-        print('LSTM weights saved under' + './models/' + model_target + model_type + '/LSTM')
-
-
-    if purpose == 'load':
-
-        multi_lstm_model.compile(loss=tf.losses.MeanSquaredError(),
-                      optimizer=tf.optimizers.Adam(),
-                      metrics=[tf.metrics.MeanAbsoluteError()])
-
-        print('LOADING ' + './models/' + path + '/LSTM', end='         ', flush=True)
-        multi_lstm_model.load_weights('./models/' + model_target + model_type + '/LSTM')
-        print('---> loaded.')
 
     IPython.display.clear_output()
 
     multi_val_performance['LSTM'] = multi_lstm_model.evaluate(multi_window.val)
     multi_performance['LSTM'] = multi_lstm_model.evaluate(multi_window.test, verbose=0)
     if model_target == 'Environment Controlled':
-          multi_window.plot(multi_lstm_model, plot_col='FEG TEMPERATURE 1')
-          plt.savefig('./models/' + model_target + model_type + '/fig/LSTM_1.svg')
-          multi_window.plot(multi_lstm_model, plot_col='FEG HUMIDITY 1')
-          plt.savefig('./models/' + model_target + model_type + '/fig/LSTM_2.svg')
-          multi_window.plot(multi_lstm_model, plot_col='FEG CO2 1')
-          plt.savefig('./models/' + model_target + model_type + '/fig/LSTM_3.svg')
-          multi_window.plot(multi_lstm_model, plot_col='FEG OXYGEN')
-          plt.savefig('./models/' + model_target + model_type + '/fig/LSTM_4.svg')
-          multi_window.plot(multi_lstm_model, plot_col='pH 1 TANK 1')
-          plt.savefig('./models/' + model_target + model_type + '/fig/LSTM_5.svg')
-          multi_window.plot(multi_lstm_model, plot_col='EC 1 TANK 1')
-          plt.savefig('./models/' + model_target + model_type + '/fig/LSTM_6.svg')
-          multi_window.plot(multi_lstm_model, plot_col='VOLUME TANK 1')
-          plt.savefig('./models/' + model_target + model_type + '/fig/LSTM_7.svg')
+          for x in range(0,len(KEY_FEATURES)):
+              multi_window.plot(multi_lstm_model, plot_col=KEY_FEATURES[x])
+              plt.savefig('./models/' + model_target + model_type + '/fig/LSTM_' + str(x) +'.svg')
 
 
     if model_target == 'Time Controlled':
           multi_window.plot(multi_lstm_model)
           plt.savefig('./models/' + model_target + model_type + '/LSTM.svg')
 
-
-    plotter = tfdocs.plots.HistoryPlotter(metric = 'mean_absolute_error', smoothing_std=10)
+    plt.show()
+    plotter = tf.tfdocs.plots.HistoryPlotter(metric = 'mean_absolute_error', smoothing_std=10)
     plotter.plot(history)
     plt.ylim([0.5, 0.7])
+    plt.savefig('./models/' + model_target + model_type + '/fig/history.svg')
+    plt.show()
 
 
 
@@ -862,23 +776,12 @@ def compute_auto_lstm():
 
     print('Output shape (batch, time, features): ', feedback_model(multi_window.example[0]).shape)
 
-    if purpose == 'train':
 
-        history = compile_and_fit(feedback_model, multi_window)
-        feedback_model.summary()
-        feedback_model.save_weights('./models/' + model_target + model_type + '/AR_LSTM')
-        print('AR LSTM weights saved under' + './models/' + model_target + model_type + '/AR_LSTM')
+    history['AR_LSTM'] = compile_and_fit(feedback_model, multi_window)
+    feedback_model.summary()
+    feedback_model.save_weights('./models/' + model_target + model_type + '/AR_LSTM')
+    print('AR LSTM weights saved under' + './models/' + model_target + model_type + '/AR_LSTM')
 
-
-    if purpose == 'load':
-
-        feedback_model.compile(loss=tf.losses.MeanSquaredError(),
-                      optimizer=tf.optimizers.Adam(),
-                      metrics=[tf.metrics.MeanAbsoluteError()])
-
-        print('LOADING ' + './models/' + path + '/AR_LSTM', end='         ', flush=True)
-        feedback_model.load_weights('./models/' + model_target + model_type + '/AR_LSTM')
-        print('---> loaded.')
 
     IPython.display.clear_output()
 
@@ -902,45 +805,9 @@ def compute_all():
         compute_auto_lstm()
 
 
-
-print('')
-print('Select Model to compute:')
-print('┌──────────────────┐')
-if model_target == 'Time Controlled':
-    print('│ 0) Repeat        │')
-print('│ 1) Linear        │')
-print('│ 2) Dense         │')
-print('│ 3) Convolutional │')
-print('│ 4) LSTM          │')
-if model_target == 'Time Controlled':
-    print('│ 5) Auto LSTM     │')
-print('│ 6) all           │')
-print('└──────────────────┘')
-
-num = int(input("Select option: "))
-options = {0 : compute_repeat,
-           1 : compute_linear,
-           2 : compute_dense,
-           3 : compute_conv,
-           4 : compute_lstm,
-           5 : compute_auto_lstm,
-           6 : compute_all,
-
-}
-
-
-options[num]()
-
-###############################################################################
-# PERFORMANCE
-###############################################################################
-
-plt.show()
-
 def compute_performance():
     x = np.arange(len(multi_performance))
     width = 0.3
-
 
     metric_name = 'mean_absolute_error'
 
@@ -971,9 +838,88 @@ def compute_performance():
         f.write('\n')
         f.close()
 
+###############################################################################
+# FINAL ENVIRONMENT CONTROLLED MODEL
+###############################################################################
 
-compute_performance()
-plt.show()
+if model_target == 'Environment Controlled' and model_type == '/final':
+
+    print('┌────────────────┐')
+    print('│   LSTM MODEL   │')
+    print('└────────────────┘')
+
+    global multi_lstm_model
+
+    multi_lstm_model = tf.keras.Sequential([
+        tf.keras.layers.LSTM(128, return_sequences=False, dropout=0.5, kernel_regularizer=regularizers.l2(0.001)),
+        tf.keras.layers.Dense(OUT_STEPS*num_output_features,
+                              kernel_initializer=tf.initializers.zeros,kernel_regularizer=regularizers.l2(0.0001)),
+        tf.keras.layers.Reshape([OUT_STEPS, num_output_features])
+    ])
+
+    history = {}
+    history['LSTM'] = compile_and_fit(multi_lstm_model, multi_window)
+    print('')
+    multi_lstm_model.summary()
+    print('')
+
+    multi_lstm_model.save_weights('./models/' + model_target + model_type + '/LSTM')
+    print('LSTM weights saved under' + './models/' + model_target + model_type + '/LSTM')
+
+
+    multi_val_performance['LSTM'] = multi_lstm_model.evaluate(multi_window.val)
+    multi_performance['LSTM'] = multi_lstm_model.evaluate(multi_window.test, verbose=0)
+
+
+    for x in range(0,len(KEY_FEATURES)):
+        multi_window.plot(multi_lstm_model, plot_col=KEY_FEATURES[x])
+        plt.savefig('./models/' + model_target + model_type + '/fig/LSTM_' + str(x) +'.svg')
+
+    plt.show()
+    plt.figure(figsize=(10,5))
+    plotter = tfdocs.plots.HistoryPlotter(metric = 'mean_absolute_error', smoothing_std=10)
+    plotter.plot(history)
+    plt.ylim([0.45, 0.75])
+    plt.savefig('./models/' + model_target + model_type + '/fig/history.svg')
+    plt.show()
+
+
+
+###############################################################################
+# SLECTION VARIOUS MODELS
+###############################################################################
+
+else:
+    print('')
+    print('Select Model to compute:')
+    print('┌──────────────────┐')
+    if model_target == 'Time Controlled':
+        print('│ 0) Repeat        │')
+    print('│ 1) Linear        │')
+    print('│ 2) Dense         │')
+    print('│ 3) Convolutional │')
+    print('│ 4) LSTM          │')
+    if model_target == 'Time Controlled':
+        print('│ 5) Auto LSTM     │')
+    print('│ 6) all           │')
+    print('└──────────────────┘')
+
+    num = int(input("Select option: "))
+    options = {0 : compute_repeat,
+               1 : compute_linear,
+               2 : compute_dense,
+               3 : compute_conv,
+               4 : compute_lstm,
+               5 : compute_auto_lstm,
+               6 : compute_all,
+
+    }
+
+    options[num]()
+
+    plt.show()
+    compute_performance()
+    plt.show()
 
 
 print('end.')
