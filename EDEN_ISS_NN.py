@@ -32,7 +32,7 @@ from sklearn.metrics import mean_absolute_error
 IN_STEPS = 288
 OUT_STEPS = IN_STEPS  # 288
 
-MAX_EPOCHS = 100
+MAX_EPOCHS = 10
 
 KEY_FEATURES = ['FEG TEMPERATURE 1','FEG HUMIDITY 1','FEG CO2 1','FEG OXYGEN','pH 1 TANK 1','EC 1 TANK 1','VOLUME TANK 1']
 
@@ -385,7 +385,8 @@ def make_dataset(self, data):
       sequence_stride=1,
       shuffle=True,
       seed=4444,
-      batch_size=554,) # full train samples 33,246
+      batch_size=64,) # full train samples 33,246
+      #554
 
   ds = ds.map(self.split_window)
 
@@ -504,7 +505,7 @@ def compile_and_fit(model, window, patience=8):
       print('using callback [early stopping]')
       history = model.fit(window.train, epochs=MAX_EPOCHS,
                           validation_data=window.val,
-                          callbacks=[early_stopping])
+                          callbacks=[reduce_lr])
 
 
   return history
@@ -900,8 +901,7 @@ if model_target == 'Environment Controlled' and model_type == '/final':
         global multi_lstm_model
 
         multi_lstm_model = tf.keras.Sequential([
-            tf.keras.layers.LSTM(256, return_sequences=False, dropout=0.5, kernel_regularizer=regularizers.l2(0.00001)),
-            tf.keras.layers.Dropout(0.4),
+            tf.keras.layers.LSTM(1024, return_sequences=False, dropout=0.3, kernel_regularizer=regularizers.l2(0.00001)),
             tf.keras.layers.Dense(OUT_STEPS*num_output_features,
                                   kernel_initializer=tf.initializers.zeros,kernel_regularizer=regularizers.l2(0.00001)),
             tf.keras.layers.Reshape([OUT_STEPS, num_output_features])
@@ -944,7 +944,7 @@ if model_target == 'Environment Controlled' and model_type == '/final':
         plt.figure(figsize=(10,4))
         plotter = tfdocs.plots.HistoryPlotter(metric = 'mean_absolute_error')
         plotter.plot(history)
-        plt.ylim([0.25, 0.7])
+        plt.ylim([0.15, 0.7])
         print('')
         print('saved to ./models/' + model_target + model_type + '/history_LSTM.svg')
         plt.savefig('./models/' + model_target + model_type + '/fig/history_LSTM.svg')
@@ -1013,7 +1013,7 @@ if model_target == 'Environment Controlled' and model_type == '/final':
         plt.figure(figsize=(10,4))
         plotter = tfdocs.plots.HistoryPlotter(metric = 'mean_absolute_error')
         plotter.plot(history)
-        plt.ylim([0.25, 0.7])
+        plt.ylim([0.15, 0.7])
         print('')
         print('saved to ./models/' + model_target + model_type + '/history_CONV.svg')
         plt.savefig('./models/' + model_target + model_type + '/fig/history_CONV.svg')
