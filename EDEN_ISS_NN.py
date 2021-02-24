@@ -6,6 +6,7 @@ import os
 import io
 import datetime
 
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
@@ -32,7 +33,7 @@ from sklearn.metrics import mean_absolute_error
 IN_STEPS = 288
 OUT_STEPS = IN_STEPS  # 288
 
-MAX_EPOCHS = 10
+MAX_EPOCHS = 15
 
 KEY_FEATURES = ['FEG TEMPERATURE 1','FEG HUMIDITY 1','FEG CO2 1','FEG OXYGEN','pH 1 TANK 1','EC 1 TANK 1','VOLUME TANK 1']
 
@@ -75,6 +76,7 @@ print('│ 2) Environment Controlled │')
 print('└───────────────────────────┘')
 
 num = int(input("Select option: "))
+
 options = {0 : 'Identify Constants',
            1 : 'Time Controlled',
            2 : 'Environment Controlled',
@@ -106,6 +108,7 @@ if model_target == 'Environment Controlled':
     print('└───────────────────────────┘')
 
     num = int(input("Select option: "))
+
     options = { 0 : '/EC',
                 1 : '/EC and TC',
                 2 : '/final',}
@@ -212,6 +215,7 @@ print('')
 print('scale features?  [y]/ n', end=' ', flush=True)
 
 scale_user = input()
+
 if ( scale_user == 'y' ) or ( scale_user == '' ) :
     train_mean = train_df.mean()
     train_std = train_df.std()
@@ -385,9 +389,8 @@ def make_dataset(self, data):
       sequence_stride=1,
       shuffle=True,
       seed=4444,
-      batch_size=64,) # full train samples 33,246
-      #554
-
+      batch_size=32,) # full train samples 33,246
+      #64
   ds = ds.map(self.split_window)
 
   return ds
@@ -419,6 +422,7 @@ def example(self):
   result = getattr(self, '_example', None)
   if result is None:
     # No example batch was found, so get one from the `.train` dataset
+    print('creating an example batch from test_df')
     result = next(iter(self.test))
     # And cache it for next time
     self._example = result
@@ -485,7 +489,7 @@ def compile_and_fit(model, window, patience=8):
 
   # use early stopping for multi models to get fast results
   early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
-                                                    patience=4,
+                                                    patience=10,
                                                     mode='min', restore_best_weights=True)
 
   # use reduced learning rate for final model for best performance
@@ -497,15 +501,15 @@ def compile_and_fit(model, window, patience=8):
                 metrics=[tf.metrics.MeanAbsoluteError()])
 
   if model_target == 'Environment Controlled' and model_type == '/final':
-      print('using callback [reduced learning rate]')
+      print('using callback [early_stopping]')
       history = model.fit(window.train, epochs=MAX_EPOCHS,
                           validation_data=window.val,
-                          callbacks=[reduce_lr])
+                          callbacks=[early_stopping])
   else:
       print('using callback [early stopping]')
       history = model.fit(window.train, epochs=MAX_EPOCHS,
                           validation_data=window.val,
-                          callbacks=[reduce_lr])
+                          callbacks=[early_stopping])
 
 
   return history
@@ -888,6 +892,7 @@ if model_target == 'Environment Controlled' and model_type == '/final':
     print('└──────────────────┘')
 
     num = int(input("Select option: "))
+
     options = {1 : 'CONV',
                2 : 'LSTM',
     }
@@ -900,8 +905,10 @@ if model_target == 'Environment Controlled' and model_type == '/final':
 
         global multi_lstm_model
 
+
+        #2048
         multi_lstm_model = tf.keras.Sequential([
-            tf.keras.layers.LSTM(1024, return_sequences=False, dropout=0.3, kernel_regularizer=regularizers.l2(0.00001)),
+            tf.keras.layers.LSTM(2048, return_sequences=False, dropout=0.1, kernel_regularizer=regularizers.l2(0.00002)),
             tf.keras.layers.Dense(OUT_STEPS*num_output_features,
                                   kernel_initializer=tf.initializers.zeros,kernel_regularizer=regularizers.l2(0.00001)),
             tf.keras.layers.Reshape([OUT_STEPS, num_output_features])
@@ -920,19 +927,38 @@ if model_target == 'Environment Controlled' and model_type == '/final':
         multi_val_performance['LSTM'] = multi_lstm_model.evaluate(multi_window.val)
         multi_performance['LSTM'] = multi_lstm_model.evaluate(multi_window.test)
 
+        plt.close('all')
+        plt.figure(figsize=(10,4))
+        plotter = tfdocs.plots.HistoryPlotter(metric = 'mean_absolute_error')
+        plotter.plot(history)
+        plt.ylim([0.1, 0.7])
+        print('')
+        print('saved to ./models/' + model_target + model_type + '/history_LSTM.svg')
+        plt.savefig('./models/' + model_target + model_type + '/fig/history_LSTM.svg')
+        plt.close('all')
+
+
+        with open('./models/' + model_target + model_type + '/history_LSTM.txt', 'w', encoding="utf-8") as f:
+            f.write(str(history['LSTM'].__dict__))
+            f.close()
+        print('saved to ./models/' + model_target + model_type + '/history_LSTM.txt')
+
+
+
         print('')
         print('evaluating individual MAE')
         individual_MAE_df = multi_window.individual_MAE(multi_lstm_model)
         individual_MAE_df.to_csv('./models/' + model_target + model_type + '/MAE_LSTM.csv', sep=';', encoding='utf-8')
         print('saved to ./models/' + model_target + model_type + '/MAE_LSTM.csv')
-        print('')
 
+        print('')
         print('plotting KEY_FEATURES')
         for x in range(0,len(KEY_FEATURES)):
             multi_window.plot(multi_lstm_model, plot_col=KEY_FEATURES[x])
             plt.savefig('./models/' + model_target + model_type + '/fig/LSTM_key_' + str(x) +'.svg')
             print('saved to ./models/' + model_target + model_type + '/fig/LSTM_key_' + str(x) +'.svg')
 
+        print('')
         print('plotting all features')
         for x in range(0,len(environment_controlled_features)):
             multi_window.plot(multi_lstm_model, plot_col=environment_controlled_features[x])
@@ -940,17 +966,8 @@ if model_target == 'Environment Controlled' and model_type == '/final':
             print('saved to ./models/' + model_target + model_type + '/fig/all_LSTM/LSTM_' + str(x) +'.svg')
             plt.close('all')
 
-        plt.close('all')
-        plt.figure(figsize=(10,4))
-        plotter = tfdocs.plots.HistoryPlotter(metric = 'mean_absolute_error')
-        plotter.plot(history)
-        plt.ylim([0.15, 0.7])
-        print('')
-        print('saved to ./models/' + model_target + model_type + '/history_LSTM.svg')
-        plt.savefig('./models/' + model_target + model_type + '/fig/history_LSTM.svg')
+
         #compute_performance()
-        plt.close('all')
-        #plt.show()
 
 
 
@@ -967,11 +984,11 @@ if model_target == 'Environment Controlled' and model_type == '/final':
             # Shape [batch, time, features] => [batch, CONV_WIDTH, features]
             tf.keras.layers.Lambda(lambda x: x[:, -CONV_WIDTH:, :]),
             # Shape => [batch, 1, conv_units]
-            tf.keras.layers.Conv1D(640, activation='relu', kernel_size=(CONV_WIDTH), kernel_regularizer=regularizers.l2(0.0001)),
-            tf.keras.layers.Dropout(0.4),
+            tf.keras.layers.Conv1D(512, activation='relu', kernel_size=(CONV_WIDTH), kernel_regularizer=regularizers.l2(0.00001)),
+            tf.keras.layers.Dropout(0.3),
             # Shape => [batch, 1,  out_steps*features]
             tf.keras.layers.Dense(OUT_STEPS*num_output_features,
-                                  kernel_initializer=tf.initializers.zeros,kernel_regularizer=regularizers.l2(0.0001)),
+                                  kernel_initializer=tf.initializers.zeros,kernel_regularizer=regularizers.l2(0.00001)),
             # Shape => [batch, out_steps, features]
             tf.keras.layers.Reshape([OUT_STEPS, num_output_features])
         ])
@@ -988,6 +1005,21 @@ if model_target == 'Environment Controlled' and model_type == '/final':
 
         multi_val_performance['CONV'] = multi_conv_model.evaluate(multi_window.val)
         multi_performance['CONV'] = multi_conv_model.evaluate(multi_window.test)
+
+        plt.close('all')
+        plt.figure(figsize=(10,4))
+        plotter = tfdocs.plots.HistoryPlotter(metric = 'mean_absolute_error')
+        plotter.plot(history)
+        plt.ylim([0.1, 0.7])
+        print('')
+        print('saved to ./models/' + model_target + model_type + '/history_CONV.svg')
+        plt.savefig('./models/' + model_target + model_type + '/fig/history_CONV.svg')
+        plt.close('all')
+
+        with open('./models/' + model_target + model_type + '/history_CONV.txt', 'w', encoding="utf-8") as f:
+            f.write(str(history['CONV'].__dict__))
+            f.close()
+        print('saved to ./models/' + model_target + model_type + '/history_CONV.txt')
 
         print('')
         print('evaluating individual MAE')
@@ -1009,17 +1041,9 @@ if model_target == 'Environment Controlled' and model_type == '/final':
             print('saved to ./models/' + model_target + model_type + '/fig/all_CONV/CONV_' + str(x) +'.svg')
             plt.close('all')
 
-        plt.close('all')
-        plt.figure(figsize=(10,4))
-        plotter = tfdocs.plots.HistoryPlotter(metric = 'mean_absolute_error')
-        plotter.plot(history)
-        plt.ylim([0.15, 0.7])
-        print('')
-        print('saved to ./models/' + model_target + model_type + '/history_CONV.svg')
-        plt.savefig('./models/' + model_target + model_type + '/fig/history_CONV.svg')
+
         #compute_performance()
-        plt.close('all')
-        #plt.show()
+
 
 
 
