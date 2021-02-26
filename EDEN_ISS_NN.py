@@ -33,7 +33,7 @@ from sklearn.metrics import mean_absolute_error
 IN_STEPS = 288
 OUT_STEPS = IN_STEPS  # 288
 
-MAX_EPOCHS = 15
+MAX_EPOCHS = 10
 
 KEY_FEATURES = ['FEG TEMPERATURE 1','FEG HUMIDITY 1','FEG CO2 1','FEG OXYGEN','pH 1 TANK 1','EC 1 TANK 1','VOLUME TANK 1']
 
@@ -389,8 +389,9 @@ def make_dataset(self, data):
       sequence_stride=1,
       shuffle=True,
       seed=4444,
-      batch_size=32,) # full train samples 33,246
+      batch_size=64,) # full train samples 33,246
       #64
+      #32
   ds = ds.map(self.split_window)
 
   return ds
@@ -448,9 +449,9 @@ multi_window = WindowGenerator(input_width=IN_STEPS,
                                shift=OUT_STEPS,
                                label_columns=OUT_FEATURES)
 
-#multi_window_baseline = WindowGenerator(input_width=IN_STEPS,
-#                               label_width=OUT_STEPS,
-#                               shift=OUT_STEPS)
+multi_window_baseline = WindowGenerator(input_width=IN_STEPS,
+                               label_width=OUT_STEPS,
+                               shift=OUT_STEPS)
 
 
 ###############################################################################
@@ -489,7 +490,7 @@ def compile_and_fit(model, window, patience=8):
 
   # use early stopping for multi models to get fast results
   early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
-                                                    patience=10,
+                                                    patience=4,
                                                     mode='min', restore_best_weights=True)
 
   # use reduced learning rate for final model for best performance
@@ -520,24 +521,24 @@ def compile_and_fit(model, window, patience=8):
 print('┌────────────────┐')
 print('│ BASELINE MODEL │')
 print('└────────────────┘')
-#class MultiStepLastBaseline(tf.keras.Model):
-#  def call(self, inputs):
-#    return tf.tile(inputs[:, -1:, :], [1, OUT_STEPS, 1])
+class MultiStepLastBaseline(tf.keras.Model):
+  def call(self, inputs):
+    return tf.tile(inputs[:, -1:, :], [1, OUT_STEPS, 1])
 
-#last_baseline = MultiStepLastBaseline()
-#last_baseline.compile(loss=tf.losses.MeanSquaredError(),
-#                      metrics=[tf.metrics.MeanAbsoluteError()])
+last_baseline = MultiStepLastBaseline()
+last_baseline.compile(loss=tf.losses.MeanSquaredError(),
+                      metrics=[tf.metrics.MeanAbsoluteError()])
 
 multi_val_performance = {}
 multi_performance = {}
 
-#if model_target == 'Time Controlled':
-#    multi_val_performance['Last'] = last_baseline.evaluate(multi_window.val)
-#    multi_performance['Last'] = last_baseline.evaluate(multi_window.test)
+if model_target == 'Time Controlled':
+    multi_val_performance['Last'] = last_baseline.evaluate(multi_window.val)
+    multi_performance['Last'] = last_baseline.evaluate(multi_window.test)
 
-#if model_target == 'Environment Controlled':
-#    multi_val_performance['Last'] = last_baseline.evaluate(multi_window_baseline.val)
-#    multi_performance['Last'] = last_baseline.evaluate(multi_window_baseline.test)
+if model_target == 'Environment Controlled':
+    multi_val_performance['Last'] = last_baseline.evaluate(multi_window_baseline.val)
+    multi_performance['Last'] = last_baseline.evaluate(multi_window_baseline.test)
 
 ###############################################################################
 
@@ -725,7 +726,7 @@ def compute_lstm():
         tf.keras.layers.Reshape([OUT_STEPS, num_output_features])
     ])
 
-    history['LSTM'] = compile_and_fit(multi_lstm_model, multi_window)
+    history = compile_and_fit(multi_lstm_model, multi_window)
     multi_lstm_model.summary()
     multi_lstm_model.save_weights('./models/' + model_target + model_type + '/LSTM')
     print('LSTM weights saved under' + './models/' + model_target + model_type + '/LSTM')
@@ -836,7 +837,7 @@ def compute_all():
     compute_linear()
     compute_dense()
     compute_conv()
-    #compute_lstm()
+    compute_lstm()
 
 
     if model_target == 'Time Controlled':

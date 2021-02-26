@@ -1,0 +1,278 @@
+C:\Users\JAN\Desktop\EDEN_ISS_NN>.\svenv2\Scripts\activate.bat
+
+(svenv2) C:\Users\JAN\Desktop\EDEN_ISS_NN>EDEN_ISS_NN.py
+2021-02-23 16:44:41.518180: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cudart64_110.dll
+2021-02-23 16:44:44.667227: I tensorflow/core/platform/cpu_feature_guard.cc:142] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2021-02-23 16:44:44.668637: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library nvcuda.dll
+2021-02-23 16:44:44.709735: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1720] Found device 0 with properties:
+pciBusID: 0000:06:00.0 name: GeForce RTX 3070 computeCapability: 8.6
+coreClock: 1.725GHz coreCount: 46 deviceMemorySize: 8.00GiB deviceMemoryBandwidth: 417.29GiB/s
+2021-02-23 16:44:44.709818: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cudart64_110.dll
+2021-02-23 16:44:45.095544: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cublas64_11.dll
+2021-02-23 16:44:45.095625: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cublasLt64_11.dll
+2021-02-23 16:44:45.137824: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cufft64_10.dll
+2021-02-23 16:44:45.159396: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library curand64_10.dll
+2021-02-23 16:44:45.362240: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cusolver64_10.dll
+2021-02-23 16:44:45.540827: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cusparse64_11.dll
+2021-02-23 16:44:45.554506: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cudnn64_8.dll
+2021-02-23 16:44:45.554629: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1862] Adding visible gpu devices: 0
+2021-02-23 16:44:45.948610: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1261] Device interconnect StreamExecutor with strength 1 edge matrix:
+2021-02-23 16:44:45.949026: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1267]      0
+2021-02-23 16:44:45.949242: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1280] 0:   N
+2021-02-23 16:44:45.949450: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1406] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 7782 MB memory) -> physical GPU (device: 0, name: GeForce RTX 3070, pci bus id: 0000:06:00.0, compute capability: 8.6)
+2021-02-23 16:44:45.949801: I tensorflow/compiler/jit/xla_gpu_device.cc:99] Not creating XLA devices, tf_xla_enable_xla_devices not set
+WARNING:tensorflow:From C:\Users\JAN\Desktop\EDEN_ISS_NN\EDEN_ISS_NN.py:48: The name tf.keras.backend.set_session is deprecated. Please use tf.compat.v1.keras.backend.set_session instead.
+
+
+Tensorflow Version 2.4.1
+
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                        │
+│    ███████ ██████  ███████ ███    ██     ██ ███████ ███████     ███    ██ ███    ██    │
+│    ██      ██   ██ ██      ████   ██     ██ ██      ██          ████   ██ ████   ██    │
+│    █████   ██   ██ █████   ██ ██  ██     ██ ███████ ███████     ██ ██  ██ ██ ██  ██    │
+│    ██      ██   ██ ██      ██  ██ ██     ██      ██      ██     ██  ██ ██ ██  ██ ██    │
+│    ███████ ██████  ███████ ██   ████     ██ ███████ ███████     ██   ████ ██   ████    │
+│                                                                                        │
+│    build on           CUDA 11.0    cuDNN 8.1.0    Tensorflow 2.4.1                     │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+
+Select the model target:
+┌───────────────────────────┐
+│ 0) Identify Constants     │
+│ 1) Time Controlled        │
+│ 2) Environment Controlled │
+└───────────────────────────┘
+Select option: 2
+
+Select model type:
+┌───────────────────────────┐
+│ 0) explain with EC only   │
+│ 1) explain with EC and TC │
+│ 2) final EC and TC model  │
+└───────────────────────────┘
+Select option: 2
+
+READING datasets/dataset_full.csv (47495, 183)
+
+FEATURES total:                    183
+FEATURES Time Controlled:           87
+FEATURES Environment Controlled:    96 match
+
+scale features?  [y]/ n
+-> features scaled.
+┌────────────────┐
+│ BASELINE MODEL │
+└────────────────┘
+
+Select Model to compute:
+┌──────────────────┐
+│ 1) Convolutional │
+│ 2) LSTM          │
+└──────────────────┘
+Select option: 2
+┌────────────────┐
+│   LSTM MODEL   │
+└────────────────┘
+2021-02-23 16:44:52.350458: I tensorflow/compiler/jit/xla_cpu_device.cc:41] Not creating XLA devices, tf_xla_enable_xla_devices not set
+2021-02-23 16:44:52.350587: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1720] Found device 0 with properties:
+pciBusID: 0000:06:00.0 name: GeForce RTX 3070 computeCapability: 8.6
+coreClock: 1.725GHz coreCount: 46 deviceMemorySize: 8.00GiB deviceMemoryBandwidth: 417.29GiB/s
+2021-02-23 16:44:52.350658: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cudart64_110.dll
+2021-02-23 16:44:52.350698: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cublas64_11.dll
+2021-02-23 16:44:52.350749: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cublasLt64_11.dll
+2021-02-23 16:44:52.351355: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cufft64_10.dll
+2021-02-23 16:44:52.351686: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library curand64_10.dll
+2021-02-23 16:44:52.352146: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cusolver64_10.dll
+2021-02-23 16:44:52.352610: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cusparse64_11.dll
+2021-02-23 16:44:52.353059: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cudnn64_8.dll
+2021-02-23 16:44:52.353584: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1862] Adding visible gpu devices: 0
+2021-02-23 16:44:52.354352: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1720] Found device 0 with properties:
+pciBusID: 0000:06:00.0 name: GeForce RTX 3070 computeCapability: 8.6
+coreClock: 1.725GHz coreCount: 46 deviceMemorySize: 8.00GiB deviceMemoryBandwidth: 417.29GiB/s
+2021-02-23 16:44:52.354500: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cudart64_110.dll
+2021-02-23 16:44:52.354920: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cublas64_11.dll
+2021-02-23 16:44:52.355358: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cublasLt64_11.dll
+2021-02-23 16:44:52.355816: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cufft64_10.dll
+2021-02-23 16:44:52.356268: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library curand64_10.dll
+2021-02-23 16:44:52.356711: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cusolver64_10.dll
+2021-02-23 16:44:52.357154: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cusparse64_11.dll
+2021-02-23 16:44:52.357630: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cudnn64_8.dll
+2021-02-23 16:44:52.358194: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1862] Adding visible gpu devices: 0
+2021-02-23 16:44:52.358619: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1261] Device interconnect StreamExecutor with strength 1 edge matrix:
+2021-02-23 16:44:52.359005: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1267]      0
+2021-02-23 16:44:52.359426: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1280] 0:   N
+2021-02-23 16:44:52.359970: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1406] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 7782 MB memory) -> physical GPU (device: 0, name: GeForce RTX 3070, pci bus id: 0000:06:00.0, compute capability: 8.6)
+2021-02-23 16:44:52.365097: I tensorflow/compiler/jit/xla_gpu_device.cc:99] Not creating XLA devices, tf_xla_enable_xla_devices not set
+using callback [early_stopping]
+2021-02-23 16:44:52.882774: I tensorflow/compiler/mlir/mlir_graph_optimization_pass.cc:116] None of the MLIR optimization passes are enabled (registered 2)
+Epoch 1/15
+2021-02-23 16:45:02.087492: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cublas64_11.dll
+2021-02-23 16:45:02.591110: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cublasLt64_11.dll
+2021-02-23 16:45:02.720988: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library cudnn64_8.dll
+2021-02-23 16:45:03.980852: I tensorflow/stream_executor/cuda/cuda_blas.cc:1838] TensorFloat-32 will be used for the matrix multiplication. This will only be logged once.
+511/511 [==============================] - 239s 445ms/step - loss: 0.5711 - mean_absolute_error: 0.4146 - val_loss: 0.8285 - val_mean_absolute_error: 0.5591
+Epoch 2/15
+511/511 [==============================] - 228s 445ms/step - loss: 0.4133 - mean_absolute_error: 0.3050 - val_loss: 0.8923 - val_mean_absolute_error: 0.5839
+Epoch 3/15
+511/511 [==============================] - 227s 444ms/step - loss: 0.4094 - mean_absolute_error: 0.2954 - val_loss: 0.9063 - val_mean_absolute_error: 0.5745
+Epoch 4/15
+511/511 [==============================] - 226s 443ms/step - loss: 0.3924 - mean_absolute_error: 0.2857 - val_loss: 0.9372 - val_mean_absolute_error: 0.5936
+Epoch 5/15
+511/511 [==============================] - 227s 443ms/step - loss: 0.3615 - mean_absolute_error: 0.2653 - val_loss: 0.8715 - val_mean_absolute_error: 0.5632
+Epoch 6/15
+511/511 [==============================] - 225s 440ms/step - loss: 0.3670 - mean_absolute_error: 0.2701 - val_loss: 0.9927 - val_mean_absolute_error: 0.6373
+Epoch 7/15
+511/511 [==============================] - 226s 443ms/step - loss: 0.4244 - mean_absolute_error: 0.3024 - val_loss: 0.8560 - val_mean_absolute_error: 0.5531
+Epoch 8/15
+511/511 [==============================] - 226s 442ms/step - loss: 0.3483 - mean_absolute_error: 0.2529 - val_loss: 0.9668 - val_mean_absolute_error: 0.6086
+Epoch 9/15
+511/511 [==============================] - 226s 443ms/step - loss: 0.3441 - mean_absolute_error: 0.2520 - val_loss: 0.9818 - val_mean_absolute_error: 0.6217
+Epoch 10/15
+511/511 [==============================] - 226s 442ms/step - loss: 0.3775 - mean_absolute_error: 0.2730 - val_loss: 0.8987 - val_mean_absolute_error: 0.5779
+Epoch 11/15
+511/511 [==============================] - 225s 439ms/step - loss: 0.3515 - mean_absolute_error: 0.2562 - val_loss: 0.9292 - val_mean_absolute_error: 0.5920
+Epoch 12/15
+511/511 [==============================] - 226s 441ms/step - loss: 0.3947 - mean_absolute_error: 0.2857 - val_loss: 0.9277 - val_mean_absolute_error: 0.5963
+Epoch 13/15
+511/511 [==============================] - 223s 437ms/step - loss: 0.3609 - mean_absolute_error: 0.2628 - val_loss: 1.0076 - val_mean_absolute_error: 0.6242
+Epoch 14/15
+511/511 [==============================] - 224s 438ms/step - loss: 0.3461 - mean_absolute_error: 0.2520 - val_loss: 1.0801 - val_mean_absolute_error: 0.6573
+Epoch 15/15
+511/511 [==============================] - 225s 441ms/step - loss: 0.4048 - mean_absolute_error: 0.2907 - val_loss: 0.9018 - val_mean_absolute_error: 0.5778
+
+Model: "sequential"
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+=================================================================
+lstm (LSTM)                  (None, 2800)              33420800
+_________________________________________________________________
+dense (Dense)                (None, 27648)             77442048
+_________________________________________________________________
+reshape (Reshape)            (None, 288, 96)           0
+=================================================================
+Total params: 110,862,848
+Trainable params: 110,862,848
+Non-trainable params: 0
+_________________________________________________________________
+
+LSTM weights saved under./models/Environment Controlled/final/LSTM
+140/140 [==============================] - 17s 119ms/step - loss: 0.9018 - mean_absolute_error: 0.5778
+66/66 [==============================] - 8s 119ms/step - loss: 1.0255 - mean_absolute_error: 0.5582
+
+saved to ./models/Environment Controlled/final/history_LSTM.svg
+saved to ./models/Environment Controlled/final/history_LSTM.txt
+
+evaluating individual MAE
+creating an example batch from test_df
+total_MAE: 0.57481986
+saved to ./models/Environment Controlled/final/MAE_LSTM.csv
+
+plotting KEY_FEATURES
+saved to ./models/Environment Controlled/final/fig/LSTM_key_0.svg
+saved to ./models/Environment Controlled/final/fig/LSTM_key_1.svg
+saved to ./models/Environment Controlled/final/fig/LSTM_key_2.svg
+saved to ./models/Environment Controlled/final/fig/LSTM_key_3.svg
+saved to ./models/Environment Controlled/final/fig/LSTM_key_4.svg
+saved to ./models/Environment Controlled/final/fig/LSTM_key_5.svg
+saved to ./models/Environment Controlled/final/fig/LSTM_key_6.svg
+
+plotting all features
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_0.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_1.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_2.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_3.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_4.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_5.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_6.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_7.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_8.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_9.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_10.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_11.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_12.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_13.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_14.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_15.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_16.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_17.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_18.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_19.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_20.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_21.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_22.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_23.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_24.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_25.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_26.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_27.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_28.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_29.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_30.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_31.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_32.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_33.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_34.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_35.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_36.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_37.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_38.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_39.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_40.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_41.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_42.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_43.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_44.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_45.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_46.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_47.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_48.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_49.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_50.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_51.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_52.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_53.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_54.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_55.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_56.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_57.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_58.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_59.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_60.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_61.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_62.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_63.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_64.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_65.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_66.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_67.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_68.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_69.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_70.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_71.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_72.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_73.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_74.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_75.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_76.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_77.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_78.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_79.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_80.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_81.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_82.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_83.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_84.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_85.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_86.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_87.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_88.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_89.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_90.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_91.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_92.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_93.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_94.svg
+saved to ./models/Environment Controlled/final/fig/all_LSTM/LSTM_95.svg
+end.
