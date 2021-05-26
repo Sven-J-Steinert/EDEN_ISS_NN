@@ -38,7 +38,6 @@ print(dataset_GMTF.isnull().sum().sum(), end=' ', flush=True)
 
 print('| EDIT', end=' ', flush=True)
 datetime_GMTF = pd.to_datetime(dataset_GMTF.index)
-#datetime_GMTF = pd.DatetimeIndex(((datetime_GMTF.asi8/(1e9*60)).round()*1e9*60).astype(np.int64))  # round to flat minutes
 datetime_GMTF = pd.DatetimeIndex(((datetime_GMTF.asi8/(1e10*30)).round()*1e10*30).astype(np.int64))  # round to 5 minute steps
 dataset_GMTF.index = datetime_GMTF
 
@@ -158,7 +157,6 @@ print('APPLYED ON timeframe', end=' ', flush=True)
 print(dataset_ILS.shape)
 
 
-
 print('')
 print(dataset_ILS.head())
 print(dataset_ILS.tail())
@@ -210,7 +208,6 @@ print(dataset_NDS.isnull().sum().sum(), end=' ', flush=True)
 
 print('| EDIT', end=' ', flush=True)
 datetime_NDS = pd.to_datetime(dataset_NDS.index)
-#datetime_NDS = pd.DatetimeIndex(((datetime_NDS.asi8/(1e9*60)).round()*1e9*60).astype(np.int64))  # round to flat minutes
 datetime_NDS = pd.DatetimeIndex(((datetime_NDS.asi8/(1e10*30)).round()*1e10*30).astype(np.int64))  # round to 5 minute steps
 dataset_NDS.index = datetime_NDS
 
@@ -261,7 +258,6 @@ dataset_TCS = raw_data_TCS.copy()
 
 print('| EDIT', end=' ', flush=True)
 datetime_TCS = pd.to_datetime(dataset_TCS.index)
-#datetime_GMTF = pd.DatetimeIndex(((datetime_GMTF.asi8/(1e9*60)).round()*1e9*60).astype(np.int64))  # round to flat minutes
 datetime_TCS = pd.DatetimeIndex(((datetime_TCS.asi8/(1e10*30)).round()*1e10*30).astype(np.int64))  # round to 5 minute steps
 dataset_TCS.index = datetime_TCS
 
@@ -304,48 +300,6 @@ dataset.index = pd.to_datetime(dataset.index)
 dataset.index.name = 'Date_Time'
 dataset.astype('float64')
 dataset.dropna()
-
-# delete completely constant features: standard deviation = 0
-#del dataset['SES TEMPERATURE']
-#del dataset['AMS-SES-HUMIDIFIER AIR IN']
-#del dataset['FEG LVL SWITCH COND MAX']
-#del dataset['FEG  TEMPERATURE PHM 2']
-#del dataset['FEG HUMIDITY PHM 2']
-#del dataset['EC Setpoint']
-#del dataset['pH Setpoint']
-#del dataset['EC Setpoint 2']
-#del dataset['pH Setpoint 2']
-# completely constant after 01.03.2018
-#del dataset['CPO HUMIDITY']
-#del dataset['SES TEMPERATURE 2']
-#del dataset['SES HUMIDITY 2']
-#del dataset['AMS-SES-FAN AIR IN']
-#del dataset['AMS-SES-VALVE AIR IN']
-#del dataset['AMS-SES-HEATER AIR IN']
-#del dataset['FEG TEMPERATURE PHM 3']
-#del dataset['FEG HUMIDITY PHM 3']
-#del dataset['FEG TEMPERATURE PHM 4']
-#del dataset['FEG HUMIDITY PHM 4']
-#del dataset['FLOW METER TANK 1']
-
-# more constant features: explained perfectly by LAST and REPEAT
-# around 1 sample that isnt constant -> sd =/= 0
-
-#del dataset['SES HUMIDITY TARGET']
-#del dataset['FEG HUMIDITY TARGET']
-#del dataset['AMS-FEG-FANS CIRC L1.L2']
-#del dataset['AMS-FEG-FANS CIRC L3.L4']
-#del dataset['AMS-FEG-FANS CIRC R1.R2']
-#del dataset['AMS-FEG-FANS CIRC R3.R4']
-#del dataset['AMS-FEG-FAN AIR LOOP 1']
-#del dataset['AMS-FEG-FAN AIR LOOP 2']
-#del dataset['AMS-FEG-UV LAMP AIR']
-#del dataset['NDS-REC PUMP TANK 1']
-#del dataset['NDS-REC PUMP TANK 2']
-#del dataset['NDS-PUMP FW ']
-#del dataset['NDS-BASE SOLENOID']
-#del dataset['NDS-BASE DOSING PUMP ']
-
 
 
 print(dataset.shape, end=' ', flush = True)
