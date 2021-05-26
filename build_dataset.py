@@ -1,12 +1,6 @@
 import numpy as np                      # math operations
 import pandas as pd                     # dataset handling
 
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-mpl.rcParams['figure.figsize'] = (8, 6)
-mpl.rcParams['axes.grid'] = False
 
 ###############################################################################
 # LOADING DATA
