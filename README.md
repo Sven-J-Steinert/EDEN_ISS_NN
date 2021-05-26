@@ -1,7 +1,7 @@
 # EDEN_ISS_NN
 Neural Network for timeseries forecasting of the EDEN ISS System
 
-order of executions to recontruct from the ground up:
+order of executions to reconstruct from the ground up:
 ```
 run build_timeframe.py       -> timeframe.csv
 run build_dataset.py         -> dataset.csv
