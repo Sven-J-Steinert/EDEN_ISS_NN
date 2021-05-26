@@ -83,7 +83,6 @@ print(dataset_AMS.isnull().sum().sum(), end=' ', flush=True)
 
 print('| EDIT', end=' ', flush=True)
 datetime_AMS = pd.to_datetime(dataset_AMS.index)
-#datetime_AMS = pd.DatetimeIndex(((datetime_AMS.asi8/(1e9*60)).round()*1e9*60).astype(np.int64))  # round to flat minutes
 datetime_AMS = pd.DatetimeIndex(((datetime_AMS.asi8/(1e10*30)).round()*1e10*30).astype(np.int64))  # round to 5 minute steps
 dataset_AMS.index = datetime_AMS
 
@@ -133,7 +132,6 @@ print(dataset_ILS.isnull().sum().sum(), end=' ', flush=True)
 
 print('| EDIT', end=' ', flush=True)
 datetime_ILS = pd.to_datetime(dataset_ILS.index)
-#datetime_ILS = pd.DatetimeIndex(((datetime_ILS.asi8/(1e9*60)).round()*1e9*60).astype(np.int64))  # round to flat minutes
 datetime_ILS = pd.DatetimeIndex(((datetime_ILS.asi8/(1e10*30)).round()*1e10*30).astype(np.int64))  # round to 5 minute steps
 dataset_ILS.index = datetime_ILS
 
